@@ -1,9 +1,11 @@
 package ru.practicum;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -12,45 +14,28 @@ import java.util.List;
 @Validated
 public class StatController {
 
+    StatService statService;
 
-//    @Autowired
-//    public StatController(UserService userService) {
-//        this.userService = userService;
-//    }
+    @Autowired
+    public StatController(StatService statService) {
+        this.statService = statService;
+    }
 
 
     @GetMapping("/stats")
-    public void getStats(@RequestParam(required = true) String start,
-                         @RequestParam(required = true) String end,
-                         @RequestParam List<String> uris,
-                         @RequestParam Boolean unique
+    public List<StatDTO> getStats(@RequestParam(required = true) String start,
+                                  @RequestParam(required = true) String end,
+                                  @RequestParam List<String> uris,
+                                  @RequestParam(required = false, defaultValue = "false") Boolean unique
     ) {
         log.info("поулчен запрос GET /stats");
-        return;
+        return statService.getStats(start, end, uris, unique);
     }
 
-    //
-//    @GetMapping("/{userId}")
-//    public Optional<User> getUsersById(@PathVariable(required = false) Long userId) {
-//        log.info("поулчен запрос GET /users/id");
-//        return userService.getUsersById(userId);
-//    }
-//
-//
     @PostMapping("/hit")
-    public void create() {
+    public void hitStat(StatHitDTO statHitDTO) {
         log.info("поулчен запрос POST /hit");
+        statService.hitStat(statHitDTO);
+
     }
-//
-//    @PatchMapping("/{userId}")
-//    public User update(@PathVariable Long userId, @RequestBody UserDto userDto) {
-//        log.debug("поулчен запрос PATCH /users");
-//        return userService.updateUser(userId, userDto);
-//    }
-//
-//    @DeleteMapping("/{userId}")
-//    public void delete(@PathVariable Long userId) {
-//        log.debug("поулчен запрос DELETE /users");
-//        userService.delete(userId);
-//    }
 }
