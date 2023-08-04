@@ -8,7 +8,7 @@ services:
     depends_on:
       - stats-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/explore-with-me-stat
 
   stats-db:
     image: postgres:14-alpine
@@ -16,7 +16,7 @@ services:
     ports:
       - "6541:5432"
     environment:
-      - POSTGRES_DB=postgres
+      - POSTGRES_DB=explore-with-me-stat
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=test
       - TZ:Europe/Moscow
@@ -30,13 +30,13 @@ services:
       - ewm-db
       - stats-server
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/explore-with-me
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/explore-with-me
 
   ewm-db:
     image: postgres:14-alpine
     container_name: ewm-db
     ports:
-      - "6540:5432"
+      - "6541:5432"
     environment:
       - POSTGRES_DB=explore-with-me
       - POSTGRES_USER=postgres
