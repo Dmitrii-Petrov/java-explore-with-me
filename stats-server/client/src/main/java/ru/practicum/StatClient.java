@@ -16,7 +16,7 @@ import java.util.Map;
 public class StatClient extends BaseClient {
 
 
-    private static final String API_PREFIX = "/items";
+    private static final String API_PREFIX = "";
 
     @Autowired
     public StatClient(@Value("${explore-with-me-stat-server.url}") String serverUrl, RestTemplateBuilder builder) {
