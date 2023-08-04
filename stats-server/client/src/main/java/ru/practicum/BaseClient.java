@@ -9,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
+
 public class BaseClient {
     protected final RestTemplate rest;
 
