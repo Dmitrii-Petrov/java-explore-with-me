@@ -36,13 +36,12 @@ public class StatController {
     public void hitStat(@RequestBody StatHitDTO statHitDTO) {
         log.info("поулчен запрос POST /hit");
         statService.hitStat(statHitDTO);
-
     }
-//
+
 //    @PostMapping("/hit")
-//    public void hitStat(@RequestBody StatHitDTO statHitDTO) {
+//    public void hitStat(Stat stat) {
 //        log.info("поулчен запрос POST /hit");
-//        statService.hitStat(statHitDTO);
+//        statService.hitStat(stat);
 //
 //    }
 }

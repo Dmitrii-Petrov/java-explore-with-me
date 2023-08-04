@@ -20,7 +20,7 @@ public class StatService {
     public void hitStat(StatHitDTO statHitDTO) {
         statRepository.save(mapToNewStat(statHitDTO));
     }
-//    public void hitStat(StatHitDTO stat) {
+//    public void hitStat(Stat stat) {
 //        statRepository.save(stat);
 //    }
     //TODO прописать formatter
