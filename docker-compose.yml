@@ -1,8 +1,8 @@
 version: '3.1'
 services:
   stats-server:
-    build: statistics/server
-    container_name: stat-server
+    build: stats-server/server
+    container_name: stats-server
     ports:
       - "9090:9090"
     depends_on:
@@ -16,13 +16,13 @@ services:
     ports:
       - "6541:5432"
     environment:
-      - POSTGRES_DB=explore-with-me-stat
+      - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=test
       - TZ:Europe/Moscow
 
   ewm-service:
-    build: main-service
+    build: ewm-service
     container_name: ewm-service
     ports:
       - "8080:8080"
@@ -36,7 +36,7 @@ services:
     image: postgres:14-alpine
     container_name: db
     ports:
-      - "6541:5432"
+      - "6540:5432"
     environment:
       - POSTGRES_DB=explore-with-me
       - POSTGRES_USER=postgres

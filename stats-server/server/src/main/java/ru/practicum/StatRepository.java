@@ -15,7 +15,7 @@ public interface StatRepository extends JpaRepository<Stat, Long> {
             "where " +
             "(st.uri in ?1) and " +
             "(st.timestamp between ?2 and ?3) " +
-            "group by st.uri " +
+            "group by st.app,st.uri " +
             "order by count(st.ip) desc")
     List<StatDTO> countHitsNotUniqueIp(List<String> uris, LocalDateTime start, LocalDateTime end);
 
@@ -23,7 +23,7 @@ public interface StatRepository extends JpaRepository<Stat, Long> {
             "from Stat as st " +
             "where " +
             "(st.timestamp between ?1 and ?2) " +
-            "group by st.uri " +
+            "group by st.app,st.uri " +
             "order by count(st.ip) desc")
     List<StatDTO> countHitsNotUniqueIpNullUris(LocalDateTime start, LocalDateTime end);
 
@@ -32,7 +32,7 @@ public interface StatRepository extends JpaRepository<Stat, Long> {
             "where " +
             "(st.uri in ?1) and " +
             "(st.timestamp between ?2 and ?3) " +
-            "group by st.uri " +
+            "group by st.app,st.uri " +
             "order by count(distinct st.ip) desc")
     List<StatDTO> countHitsUniqueIp(List<String> uris, LocalDateTime start, LocalDateTime end);
 
@@ -40,7 +40,7 @@ public interface StatRepository extends JpaRepository<Stat, Long> {
             "from Stat as st " +
             "where " +
             "(st.timestamp between ?1 and ?2) " +
-            "group by st.uri " +
+            "group by st.app,st.uri " +
             "order by count(distinct st.ip) desc")
     List<StatDTO> countHitsUniqueIpNullUris(LocalDateTime start, LocalDateTime end);
 }

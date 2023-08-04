@@ -9,8 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>main-service</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>ewm-service</artifactId>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -21,6 +20,11 @@
         <dependency>
             <groupId>ru.practicum</groupId>
             <artifactId>client</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.practicum</groupId>
+            <artifactId>shared-dto</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
