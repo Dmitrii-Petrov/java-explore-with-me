@@ -20,13 +20,17 @@ public class StatService {
     public void hitStat(StatHitDTO statHitDTO) {
         statRepository.save(mapToNewStat(statHitDTO));
     }
-//    public void hitStat(Stat stat) {
-//        statRepository.save(stat);
-//    }
-    //TODO прописать formatter
+
     public List<StatDTO> getStats(String start, String end, List<String> uris, Boolean unique) {
         DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return statRepository.countHitsNotUniqueIp(uris, LocalDateTime.parse(start,myFormatObj), LocalDateTime.parse(end,myFormatObj));
+        if (!unique) {
+            if (uris == null) {
+                return statRepository.countHitsNotUniqueIpNullUris(LocalDateTime.parse(start, myFormatObj), LocalDateTime.parse(end, myFormatObj));
+            } else
+                return statRepository.countHitsNotUniqueIp(uris, LocalDateTime.parse(start, myFormatObj), LocalDateTime.parse(end, myFormatObj));
+        } else if (uris == null) {
+            return statRepository.countHitsUniqueIpNullUris(LocalDateTime.parse(start, myFormatObj), LocalDateTime.parse(end, myFormatObj));
+        } else
+            return statRepository.countHitsUniqueIp(uris, LocalDateTime.parse(start, myFormatObj), LocalDateTime.parse(end, myFormatObj));
     }
-
 }

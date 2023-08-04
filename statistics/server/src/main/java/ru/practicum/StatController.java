@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -23,8 +22,8 @@ public class StatController {
 
 
     @GetMapping("/stats")
-    public List<StatDTO> getStats(@RequestParam(required = true) String start,
-                                  @RequestParam(required = true) String end,
+    public List<StatDTO> getStats(@RequestParam String start,
+                                  @RequestParam String end,
                                   @RequestParam(required = false) List<String> uris,
                                   @RequestParam(required = false, defaultValue = "false") Boolean unique
     ) {
@@ -38,10 +37,4 @@ public class StatController {
         statService.hitStat(statHitDTO);
     }
 
-//    @PostMapping("/hit")
-//    public void hitStat(Stat stat) {
-//        log.info("поулчен запрос POST /hit");
-//        statService.hitStat(stat);
-//
-//    }
 }
