@@ -25,7 +25,7 @@ public class StatController {
     @GetMapping("/stats")
     public List<StatDTO> getStats(@RequestParam(required = true) String start,
                                   @RequestParam(required = true) String end,
-                                  @RequestParam List<String> uris,
+                                  @RequestParam(required = false) List<String> uris,
                                   @RequestParam(required = false, defaultValue = "false") Boolean unique
     ) {
         log.info("поулчен запрос GET /stats");
@@ -33,9 +33,16 @@ public class StatController {
     }
 
     @PostMapping("/hit")
-    public void hitStat(StatHitDTO statHitDTO) {
+    public void hitStat(@RequestBody StatHitDTO statHitDTO) {
         log.info("поулчен запрос POST /hit");
         statService.hitStat(statHitDTO);
 
     }
+//
+//    @PostMapping("/hit")
+//    public void hitStat(@RequestBody StatHitDTO statHitDTO) {
+//        log.info("поулчен запрос POST /hit");
+//        statService.hitStat(statHitDTO);
+//
+//    }
 }
