@@ -29,7 +29,7 @@ public class StatClient extends BaseClient {
     }
 
     public ResponseEntity<Object> postHit(StatHitDTO statHitDTO) {
-        return post("/hit", statHitDTO);
+        return post(statHitDTO);
     }
 
     public ResponseEntity<Object> getStat(String start, String end, List<String> uris, Boolean unique) {
