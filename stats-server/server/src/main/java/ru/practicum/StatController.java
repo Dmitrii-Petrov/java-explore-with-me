@@ -1,7 +1,7 @@
 package ru.practicum;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,16 +10,11 @@ import java.util.List;
 @RestController
 @RequestMapping
 @Slf4j
+@RequiredArgsConstructor
 @Validated
 public class StatController {
 
-    StatService statService;
-
-    @Autowired
-    public StatController(StatService statService) {
-        this.statService = statService;
-    }
-
+    private final StatService statService;
 
     @GetMapping("/stats")
     public List<StatDTO> getStats(@RequestParam String start,
