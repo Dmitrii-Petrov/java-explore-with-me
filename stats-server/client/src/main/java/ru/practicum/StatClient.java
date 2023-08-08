@@ -19,9 +19,9 @@ public class StatClient {
     protected final RestTemplate rest;
 
     @Autowired
-    public StatClient(@Value("${server.url}") String serverUrl, RestTemplateBuilder builder) {
+    public StatClient(RestTemplateBuilder builder) {
         this.rest = builder
-                .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
+                .uriTemplateHandler(new DefaultUriBuilderFactory("http://stats-server:9090"))
                 .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                 .build();
     }
