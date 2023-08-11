@@ -20,8 +20,7 @@ public class StatController {
     public List<StatDTO> getStats(@RequestParam String start,
                                   @RequestParam String end,
                                   @RequestParam(required = false) List<String> uris,
-                                  @RequestParam(required = false, defaultValue = "false") Boolean unique
-    ) {
+                                  @RequestParam(required = false, defaultValue = "false") Boolean unique) {
         log.info("поулчен запрос GET /stats");
         return statService.getStats(start, end, uris, unique);
     }

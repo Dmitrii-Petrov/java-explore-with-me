@@ -6,63 +6,81 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.DTO.CategoryDto;
 import ru.practicum.Services.CategoryService;
-import ru.practicum.exceptions.DuplicateNameException;
-import ru.practicum.exceptions.FailCategoryNameException;
+import ru.practicum.Services.EventService;
+import ru.practicum.exceptions.NotFoundEntityException;
 
-import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin")
+@RequestMapping
 @Slf4j
 @RequiredArgsConstructor
 @Validated
-public class EwmController {
+public class PublicController {
 
     private final CategoryService categoryService;
 
+    private final EventService eventService;
 
-    @PostMapping("/categories")
-    public ResponseEntity<Object> postCategory(@RequestBody @Valid CategoryDto categoryDto) {
-        log.info("Post category {} ", categoryDto);
+
+    @GetMapping("/events")
+    public ResponseEntity<Object> getEvents(@RequestParam String text,
+                                            @RequestParam(required = false) List<Long> categories,
+                                            @RequestParam(required = false) Boolean paid,
+                                            @RequestParam(required = false) String rangeStart,
+                                            @RequestParam(required = false) String rangeEnd,
+                                            @RequestParam(defaultValue = "false") Boolean onlyAvailable,
+                                            //EVENT_DATE, VIEWS
+                                            @RequestParam(required = false) String sort,
+                                            @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                            @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
+        log.info("Get events with text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}",
+                text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+
+        if (rangeStart == null) {
+            rangeStart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        }
+        if (rangeEnd == null) {
+            rangeEnd = LocalDateTime.now().plusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        }
+
         return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(categoryService.postCategory(categoryDto));
+                .status(HttpStatus.OK)
+                .body(eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size));
     }
 
-    @ExceptionHandler(value = {FailCategoryNameException.class})
-    public ResponseEntity<Object> handleUnknownStateException(final FailCategoryNameException ex) {
+
+    @GetMapping("/events/{eventId}")
+    public ResponseEntity<Object> getEventById(@PathVariable Long eventId) {
+        log.info("Get event/{}", eventId);
+
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(eventService.getPublicEventById(eventId));
+    }
+
+
+    @ExceptionHandler(value = {NotFoundEntityException.class})
+    public ResponseEntity<Object> handleUnknownStateException(final NotFoundEntityException ex) {
         Map<String, Object> response = new LinkedHashMap<>();
 
-        response.put("status", HttpStatus.BAD_REQUEST.name());
-        response.put("reason", HttpStatus.BAD_REQUEST.getReasonPhrase());
-        response.put("message",ex.getMessage());
+        response.put("status", HttpStatus.NOT_FOUND.name());
+        response.put("reason", HttpStatus.NOT_FOUND.getReasonPhrase());
+        response.put("message", ex.getMessage());
         response.put("timestamp", LocalDateTime.now());
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.NOT_FOUND)
                 .body(response);
     }
-
-    @ExceptionHandler(value = {DuplicateNameException.class})
-    public ResponseEntity<Object> handleUnknownStateException(final DuplicateNameException ex) {
-        Map<String, Object> response = new LinkedHashMap<>();
-
-        response.put("status", HttpStatus.CONFLICT.name());
-        response.put("reason", HttpStatus.CONFLICT.getReasonPhrase());
-        response.put("message",ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(response);
-    }
-
-
 
 //private final ItemClient itemClient;
 //
