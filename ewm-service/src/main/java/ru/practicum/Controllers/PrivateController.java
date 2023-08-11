@@ -31,9 +31,9 @@ public class PrivateController {
 
     @GetMapping("/{userId}/events")
     public ResponseEntity<Object> getEvents(@PathVariable @NotNull @PositiveOrZero Long userId,
-                                             @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
-                                           @RequestParam(name = "size", defaultValue = "10") @Positive Integer size
-                                             ) {
+                                            @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                            @RequestParam(name = "size", defaultValue = "10") @Positive Integer size
+    ) {
         log.info("Get users/{}/events with from={}, size={}", userId, from, size);
 
         return ResponseEntity
@@ -48,13 +48,25 @@ public class PrivateController {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(eventService.postEvent(eventCreationDto,userId));
+                .body(eventService.postEvent(eventCreationDto, userId));
     }
 
+
+    @GetMapping("/{userId}/events/{eventId}")
+    public ResponseEntity<Object> getEventByUser(@PathVariable @NotNull @PositiveOrZero Long userId,
+                                                 @PathVariable @NotNull @PositiveOrZero Long eventId) {
+        log.info("Get users/{}/events/{}", userId, eventId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(eventService.getEventByUser(userId, eventId));
+    }
+
+
     @PatchMapping("/{userId}/events/{eventId}")
-    public ResponseEntity<Object> patchEvent(@PathVariable @NotNull @PositiveOrZero Long userId,
-                                             @PathVariable @NotNull @PositiveOrZero Long eventId,
-                                             @RequestBody @Valid EventFullDto eventFullDto) {
+    public ResponseEntity<Object> patchEventByUser(@PathVariable @NotNull @PositiveOrZero Long userId,
+                                                   @PathVariable @NotNull @PositiveOrZero Long eventId,
+                                                   @RequestBody @Valid EventFullDto eventFullDto) {
         log.info("Patch users/{}/events/{} with {}", userId, eventId, eventFullDto);
 
         return ResponseEntity
@@ -62,15 +74,35 @@ public class PrivateController {
                 .body(eventService.patchEventByUser(userId, eventId, eventFullDto));
     }
 
+    @GetMapping("/{userId}/events/{eventId}/requests")
+    public ResponseEntity<Object> getRequestByUser(@PathVariable @NotNull @PositiveOrZero Long userId,
+                                                   @PathVariable @NotNull @PositiveOrZero Long eventId) {
+        log.info("Get users/{}/events/{}/requests", userId, eventId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(eventService.getRequestByUser(userId, eventId));
+    }
+
     @PatchMapping("/{userId}/events/{eventId}/requests")
-    public ResponseEntity<Object> patchRequest(@PathVariable @NotNull @PositiveOrZero Long userId,
-                                               @PathVariable @NotNull @PositiveOrZero Long eventId,
-                                               @RequestBody RequestDto requestDto) {
+    public ResponseEntity<Object> patchRequestByUser(@PathVariable @NotNull @PositiveOrZero Long userId,
+                                                     @PathVariable @NotNull @PositiveOrZero Long eventId,
+                                                     @RequestBody RequestDto requestDto) {
         log.info("Patch users/{}/events/{}/requests with {}", userId, eventId, requestDto);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(eventService.patchRequest(userId, eventId, requestDto));
+    }
+
+
+    @GetMapping("/{userId}/requests")
+    public ResponseEntity<Object> getRequests(@PathVariable @NotNull @PositiveOrZero Long userId) {
+        log.info("Post users/{}/requests", userId);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(eventService.getRequests(userId));
     }
 
     @PostMapping("/{userId}/requests")
@@ -81,6 +113,16 @@ public class PrivateController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(eventService.postRequest(userId, eventId));
+    }
+
+    @PatchMapping("/{userId}/requests/{requestId}/cancel")
+    public ResponseEntity<Object> cancelRequest(@PathVariable @NotNull @PositiveOrZero Long userId,
+                                                @PathVariable @NotNull @PositiveOrZero Long requestId) {
+        log.info("Post users/{}/requests/{}/cancel", userId, requestId);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(eventService.cancelRequest(userId, requestId));
     }
 
 

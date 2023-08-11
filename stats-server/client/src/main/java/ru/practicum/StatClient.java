@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -35,7 +34,7 @@ public class StatClient {
         return rest.exchange(urlTemplate, HttpMethod.GET, null, StatDTO[].class,parameters);
     }
 
-    public HttpStatus postHit(StatHitDTO statHitDTO) {
-        return rest.exchange("/hit", HttpMethod.POST, new HttpEntity<>(statHitDTO), StatHitDTO.class).getStatusCode();
+    public ResponseEntity<StatHitDTO> postHit(StatHitDTO statHitDTO) {
+        return rest.exchange("/hit", HttpMethod.POST, new HttpEntity<>(statHitDTO), StatHitDTO.class);
     }
 }

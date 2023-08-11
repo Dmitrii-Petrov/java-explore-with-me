@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import ru.practicum.model.enums.State;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "events", schema = "public")
-public class Event {
+public class Event implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,7 +39,7 @@ public class Event {
     private User initiator;
 
     @ManyToOne
-    @JoinColumn
+    @JoinColumn(name = "location_id")
     private Location location;
 
     private Boolean paid;
@@ -52,4 +53,8 @@ public class Event {
     private State state;
 
     private String title;
+
+    @ManyToOne
+    @JoinColumn(name = "confirmed_requests")
+    private Request confirmedRequests;
 }

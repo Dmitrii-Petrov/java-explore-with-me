@@ -13,10 +13,12 @@ import ru.practicum.DTO.EventShortDto;
 import ru.practicum.DTO.RequestDto;
 import ru.practicum.StatClient;
 import ru.practicum.StatDTO;
+import ru.practicum.StatHitDTO;
 import ru.practicum.exceptions.NotFoundEntityException;
 import ru.practicum.model.Event;
 import ru.practicum.model.QEvent;
 import ru.practicum.model.Request;
+import ru.practicum.model.User;
 import ru.practicum.model.enums.State;
 import ru.practicum.model.enums.StateAction;
 import ru.practicum.model.enums.Status;
@@ -76,20 +78,56 @@ public class EventService {
                                                //EVENT_DATE, VIEWS
                                                String sort,
                                                Integer from,
-                                               Integer size) {
+                                               Integer size,
+                                               String ip,
+                                               String uri) {
         Pageable page = PageRequest.of(from / size, size);
         List<EventShortDto> result = new ArrayList<>();
-        BooleanExpression byPaid = QEvent.event.paid.eq(paid);
-        BooleanExpression byCategoryIn = QEvent.event.category.id.in(categories);
-        BooleanExpression byDescriptionSearch = QEvent.event.description.containsIgnoreCase(text);
-        BooleanExpression byAnnotationSearch = QEvent.event.annotation.containsIgnoreCase(text);
+
+        Page<Event> eventPage;
+
         BooleanExpression byStartDate = QEvent.event.eventDate.after(LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         BooleanExpression byEndDate = QEvent.event.eventDate.before(LocalDateTime.parse(rangeEnd, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
-        Page<Event> eventPage = eventRepository.findAll(byPaid.and(byCategoryIn.and(byDescriptionSearch.and(byAnnotationSearch.and(byStartDate.and(byEndDate))))), page);
+        if ((paid != null) && (categories != null) && (text != null)) {
+            BooleanExpression byPaid = QEvent.event.paid.eq(paid);
+            BooleanExpression byCategoryIn = QEvent.event.category.id.in(categories);
+            BooleanExpression byDescriptionSearch = QEvent.event.description.containsIgnoreCase(text);
+            BooleanExpression byAnnotationSearch = QEvent.event.annotation.containsIgnoreCase(text);
+            eventPage = eventRepository.findAll(byPaid.and(byCategoryIn.and(byDescriptionSearch.and(byAnnotationSearch.and(byStartDate.and(byEndDate))))), page);
+        } else if ((paid != null) && (categories != null)) {
+            BooleanExpression byPaid = QEvent.event.paid.eq(paid);
+            BooleanExpression byCategoryIn = QEvent.event.category.id.in(categories);
+            eventPage = eventRepository.findAll(byPaid.and(byCategoryIn.and(byStartDate.and(byEndDate))), page);
+        } else if ((paid != null) && (text != null)) {
+            BooleanExpression byPaid = QEvent.event.paid.eq(paid);
+            BooleanExpression byDescriptionSearch = QEvent.event.description.containsIgnoreCase(text);
+            BooleanExpression byAnnotationSearch = QEvent.event.annotation.containsIgnoreCase(text);
+            eventPage = eventRepository.findAll(byPaid.and(byDescriptionSearch.and(byAnnotationSearch.and(byStartDate.and(byEndDate)))), page);
+        } else if ((categories != null) && (text != null)) {
+            BooleanExpression byCategoryIn = QEvent.event.category.id.in(categories);
+            BooleanExpression byDescriptionSearch = QEvent.event.description.containsIgnoreCase(text);
+            BooleanExpression byAnnotationSearch = QEvent.event.annotation.containsIgnoreCase(text);
+            eventPage = eventRepository.findAll(byCategoryIn.and(byDescriptionSearch.and(byAnnotationSearch.and(byStartDate.and(byEndDate)))), page);
+        } else if (categories != null) {
+            BooleanExpression byPaid = QEvent.event.paid.eq(paid);
+            BooleanExpression byCategoryIn = QEvent.event.category.id.in(categories);
+            eventPage = eventRepository.findAll(byPaid.and(byCategoryIn.and(byStartDate.and(byEndDate))), page);
+        } else if (paid != null) {
+            BooleanExpression byPaid = QEvent.event.paid.eq(paid);
+            eventPage = eventRepository.findAll(byPaid.and((byStartDate.and(byEndDate))), page);
+        } else if (text != null) {
+            BooleanExpression byDescriptionSearch = QEvent.event.description.containsIgnoreCase(text);
+            BooleanExpression byAnnotationSearch = QEvent.event.annotation.containsIgnoreCase(text);
+            eventPage = eventRepository.findAll(byDescriptionSearch.and(byAnnotationSearch.and(byStartDate.and(byEndDate))), page);
+        } else eventPage = eventRepository.findAll(byEndDate.and(byStartDate), page);
 
-        eventPage.getContent().forEach(event -> {
-            result.add(eventToShortDto(event));
+
+
+        statClient.postHit(new StatHitDTO("ewm-service", ip, uri, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+
+        eventPage.getContent().forEach(event1 -> {
+            result.add(eventToShortDto(event1));
         });
 
         if (result.size() > from % size) {
@@ -97,14 +135,16 @@ public class EventService {
         } else return new ArrayList<>();
     }
 
+    // TODO по тестам
+
 
     public List<EventFullDto> getAdminEvents(List<Long> users,
-                                              List<String> states,
-                                              List<Long> categories,
-                                              String rangeStart,
-                                              String rangeEnd,
-                                              Integer from,
-                                              Integer size) {
+                                             List<String> states,
+                                             List<Long> categories,
+                                             String rangeStart,
+                                             String rangeEnd,
+                                             Integer from,
+                                             Integer size) {
         Pageable page = PageRequest.of(from / size, size);
         List<EventFullDto> result = new ArrayList<>();
         BooleanExpression byUsers = QEvent.event.initiator.id.in(users);
@@ -127,7 +167,7 @@ public class EventService {
             EventFullDto eventFullDto = eventToFullDto(event);
             StatDTO[] statDTOList = statClient.getStatDTOs(parameters).getBody();
 
-            if ((statDTOList != null)&&(statDTOList.length>0)) {
+            if ((statDTOList != null) && (statDTOList.length > 0)) {
                 eventFullDto.setViews(statDTOList[0].getHits());
             } else eventFullDto.setViews(0L);
 
@@ -142,13 +182,14 @@ public class EventService {
     }
 
 
-    public EventShortDto getPublicEventById(Long eventId) {
+    public EventShortDto getPublicEventById(Long eventId, String ip,
+                                            String uri) {
         Event event = eventRepository.findByIdAndState(eventId, State.PUBLISHED);
         if (event == null) {
             throw new NotFoundEntityException("Event with id=" + eventId + " was not found");
         }
         EventShortDto eventShortDto = eventToShortDto(event);
-
+        statClient.postHit(new StatHitDTO("ewm-service", ip, uri, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         return eventShortDto;
     }
 
@@ -192,8 +233,27 @@ public class EventService {
         return eventToFullDto(eventRepository.save(event));
     }
 
+    public EventFullDto getEventByUser(Long userId, Long eventId) {
+        EventFullDto eventFullDto = eventToFullDto(eventRepository.findById(eventId).get());
+
+        Map<String, Object> parameters = Map.of("start", (LocalDateTime.now().minusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))),
+                "end", (LocalDateTime.now().plusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))),
+                "uris", List.of("/event/" + eventId));
+
+        StatDTO[] statDTOList = statClient.getStatDTOs(parameters).getBody();
+
+        if ((statDTOList != null) && (statDTOList.length > 0)) {
+            eventFullDto.setViews(statDTOList[0].getHits());
+        } else eventFullDto.setViews(0L);
+
+        eventFullDto.setConfirmedRequests(requestRepository.countAllByEventIdAndStatus(eventId, Status.CONFIRMED));
+
+        return eventFullDto;
+    }
+
     public EventFullDto patchEventByUser(Long userId, Long eventId, EventFullDto eventFullDto) {
         Event event = eventRepository.findById(eventId).get();
+
         if (eventFullDto.getCategory() != null) {
             event.setCategory(categoryRepository.findById(eventFullDto.getCategory()).get());
         }
@@ -233,12 +293,19 @@ public class EventService {
 
     // TODO -правельный маппер
     //      -проверку на юзера
+
+
+    public RequestDto getRequestByUser(Long userId, Long eventId) {
+        return requestToDto(requestRepository.findById(eventId).get());
+    }
+
+
     public List<RequestDto> patchRequest(Long userId, Long eventId, RequestDto requestDto) {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundEntityException("User with id=" + userId + " was not found");
         }
 
-        Event event = eventRepository.findByIdAndInitiator(eventId,userRepository.findById(userId).get());
+        Event event = eventRepository.findByIdAndInitiator(eventId, userRepository.findById(userId).get());
         if (event == null) {
             throw new NotFoundEntityException("Event with id=" + eventId + " was not found");
         }
@@ -252,6 +319,18 @@ public class EventService {
         requestRepository.saveAll(requests);
 
         return result;
+    }
+
+
+    public List<RequestDto> getRequests(Long userId) {
+        List<RequestDto> requestDtoList = new ArrayList<>();
+        User user = userRepository.findById(userId).get();
+        List<Request> requests = requestRepository.findAllByRequester(user);
+
+        requests.forEach(request -> {
+            requestDtoList.add(requestToDto(request));
+        });
+        return requestDtoList;
 
     }
 
@@ -264,6 +343,15 @@ public class EventService {
         request.setStatus(Status.PENDING);
 
         return requestToDto(requestRepository.save(request));
+    }
+
+    public RequestDto cancelRequest(Long userId, Long eventId) {
+
+        Request request = requestRepository.findById(eventId).get();
+        request.setStatus(Status.PENDING);
+
+        return requestToDto(requestRepository.save(request));
+
     }
 
 

@@ -8,8 +8,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.DTO.CategoryDto;
 import ru.practicum.DTO.EventFullDto;
+import ru.practicum.DTO.NewCompilationDto;
 import ru.practicum.DTO.UserDto;
 import ru.practicum.Services.CategoryService;
+import ru.practicum.Services.CompilationService;
 import ru.practicum.Services.EventService;
 import ru.practicum.Services.UserService;
 import ru.practicum.exceptions.DuplicateNameException;
@@ -36,6 +38,8 @@ public class AdminController {
     private final UserService userService;
 
     private final EventService eventService;
+
+    private final CompilationService compilationService;
 
 
     @PostMapping("/categories")
@@ -94,36 +98,6 @@ public class AdminController {
     }
 
 
-    @GetMapping("/users")
-    public ResponseEntity<Object> getUsers(@RequestParam(required = false) List<Long> ids,
-                                           @RequestParam(required = false, defaultValue = "0") Integer from,
-                                           @RequestParam(required = false, defaultValue = "10") Integer size) {
-        log.info("Get users {}, from = {}, size ={}", ids, from, size);
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(userService.getUsers(ids, from, size));
-    }
-
-    @PostMapping("/users")
-    public ResponseEntity<Object> postUser(@RequestBody @Valid UserDto userDto) {
-        log.info("Post users {}", userDto);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(userService.saveUser(userDto));
-    }
-
-    @DeleteMapping("/users/{userId}")
-    public ResponseEntity<Object> deleteUser(@PathVariable @NotNull @PositiveOrZero Long userId) {
-        log.info("Delete user by id {}", userId);
-        userService.deleteUser(userId);
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body(null);
-    }
-
-
     @PatchMapping("/events/{eventId}")
     public ResponseEntity<Object> patchEvent(@PathVariable @NotNull @PositiveOrZero Long eventId, @RequestBody @Valid EventFullDto eventFullDto) {
         log.info("Patch events with eventId = {}, body = {}", eventId, eventFullDto);
@@ -158,50 +132,63 @@ public class AdminController {
     }
 
 
-//private final ItemClient itemClient;
-//
-//    @GetMapping
-//    public ResponseEntity<Object> getItems(@RequestHeader("X-Sharer-User-Id") Long userId,
-//                                           @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
-//                                           @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
-//        log.info("Get items with userId={}, from={}, size={}", userId, from, size);
-//        return itemClient.getItemsByUserId(userId, from, size);
-//    }
-//
-//    @GetMapping("/{itemId}")
-//    public ResponseEntity<Object> getItemById(@PathVariable @NotNull @PositiveOrZero Long itemId, @RequestHeader("X-Sharer-User-Id") @PositiveOrZero Long userId) {
-//        log.info("Get with itemId ={}, with userId={}", itemId, userId);
-//        return itemClient.getItemDtoByItemId(itemId, userId);
-//    }
-//
-//
-//    @PostMapping("/{itemId}/comment")
-//    public ResponseEntity<Object> addComment(@PathVariable @NotNull Long itemId,
-//                                             @RequestHeader("X-Sharer-User-Id") Long userId,
-//                                             @RequestBody @Valid CommentDto commentDto) {
-//        log.info("Post comment {} with itemId ={}, with userId={}", commentDto, itemId, userId);
-//        return itemClient.addComment(itemId, userId, commentDto);
-//    }
-//
-//    @GetMapping("/search")
-//    public ResponseEntity<Object> getItemsByTextSearch(@RequestHeader("X-Sharer-User-Id") Long userId,
-//                                                       @RequestParam String text,
-//                                                       @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
-//                                                       @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
-//        log.info("Get /search with text={} , from={}, size={}", text, from, size);
-//        return itemClient.getItemsByTextSearch(userId, text, from, size);
-//    }
-//
-//    @PostMapping()
-//    public ResponseEntity<Object> create(@RequestBody @Valid ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
-//        log.info("Post item {} with userId={}", itemDto, userId);
-//        return itemClient.create(itemDto, userId);
-//    }
-//
-//    @PatchMapping("/{itemId}")
-//    public ResponseEntity<Object> update(@PathVariable @NotNull Long itemId, @RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
-//        log.info("Patch item {} with itemId ={}, with userId={}", itemDto, itemId, userId);
-//        return itemClient.update(itemDto, itemId, userId);
-//    }
+    @GetMapping("/users")
+    public ResponseEntity<Object> getUsers(@RequestParam(required = false) List<Long> ids,
+                                           @RequestParam(required = false, defaultValue = "0") Integer from,
+                                           @RequestParam(required = false, defaultValue = "10") Integer size) {
+        log.info("Get users {}, from = {}, size ={}", ids, from, size);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(userService.getUsers(ids, from, size));
+    }
+
+    @PostMapping("/users")
+    public ResponseEntity<Object> postUser(@RequestBody @Valid UserDto userDto) {
+        log.info("Post users {}", userDto);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(userService.saveUser(userDto));
+    }
+
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<Object> deleteUser(@PathVariable @NotNull @PositiveOrZero Long userId) {
+        log.info("Delete user by id {}", userId);
+        userService.deleteUser(userId);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .body(null);
+    }
+
+
+    @PostMapping("/compilations")
+    public ResponseEntity<Object> postCompilation(@RequestBody NewCompilationDto newCompilationDto) {
+        log.info("Post /compilations {}", newCompilationDto);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(compilationService.postCompilation(newCompilationDto));
+    }
+
+    @DeleteMapping("/compilations/{compId}")
+    public ResponseEntity<Object> deleteCompilation(@PathVariable Long compId) {
+        log.info("Delete /compilations/{}", compId);
+
+        compilationService.deleteCompilation(compId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(null);
+    }
+
+    @PatchMapping("/compilations/{compId}")
+    public ResponseEntity<Object> postCompilation(@PathVariable Long compId, @RequestBody NewCompilationDto newCompilationDto) {
+        log.info("Patch /compilations/{} with {}", compId, newCompilationDto);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(compilationService.patchCompilation(compId, newCompilationDto));
+    }
+
 
 }

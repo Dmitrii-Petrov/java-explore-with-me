@@ -10,6 +10,7 @@ import ru.practicum.Services.CategoryService;
 import ru.practicum.Services.EventService;
 import ru.practicum.exceptions.NotFoundEntityException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
@@ -31,7 +32,7 @@ public class PublicController {
 
 
     @GetMapping("/events")
-    public ResponseEntity<Object> getEvents(@RequestParam String text,
+    public ResponseEntity<Object> getEvents(@RequestParam(required = false) String text,
                                             @RequestParam(required = false) List<Long> categories,
                                             @RequestParam(required = false) Boolean paid,
                                             @RequestParam(required = false) String rangeStart,
@@ -40,7 +41,8 @@ public class PublicController {
                                             //EVENT_DATE, VIEWS
                                             @RequestParam(required = false) String sort,
                                             @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
-                                            @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
+                                            @RequestParam(name = "size", defaultValue = "10") @Positive Integer size,
+                                            HttpServletRequest request) {
         log.info("Get events with text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}",
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 
@@ -53,18 +55,19 @@ public class PublicController {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size));
+                .body(eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request.getRequestURI(), request.getRemoteAddr()));
     }
 
 
     @GetMapping("/events/{eventId}")
-    public ResponseEntity<Object> getEventById(@PathVariable Long eventId) {
+    public ResponseEntity<Object> getEventById(@PathVariable Long eventId,
+                                               HttpServletRequest request) {
         log.info("Get event/{}", eventId);
 
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(eventService.getPublicEventById(eventId));
+                .body(eventService.getPublicEventById(eventId, request.getRequestURI(), request.getRemoteAddr()));
     }
 
 
