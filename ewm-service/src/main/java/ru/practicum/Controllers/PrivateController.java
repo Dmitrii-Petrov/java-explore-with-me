@@ -75,13 +75,13 @@ public class PrivateController {
     }
 
     @GetMapping("/{userId}/events/{eventId}/requests")
-    public ResponseEntity<Object> getRequestByUser(@PathVariable @NotNull @PositiveOrZero Long userId,
+    public ResponseEntity<Object> getRequestsByUser(@PathVariable @NotNull @PositiveOrZero Long userId,
                                                    @PathVariable @NotNull @PositiveOrZero Long eventId) {
         log.info("Get users/{}/events/{}/requests", userId, eventId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(eventService.getRequestByUser(userId, eventId));
+                .body(eventService.getRequestsByUser(userId, eventId));
     }
 
     @PatchMapping("/{userId}/events/{eventId}/requests")
@@ -101,7 +101,7 @@ public class PrivateController {
         log.info("Post users/{}/requests", userId);
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(HttpStatus.OK)
                 .body(eventService.getRequests(userId));
     }
 

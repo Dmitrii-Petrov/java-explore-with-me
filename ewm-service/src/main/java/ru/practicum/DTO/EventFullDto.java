@@ -10,6 +10,8 @@ import ru.practicum.model.User;
 import ru.practicum.model.enums.State;
 import ru.practicum.model.enums.StateAction;
 
+import javax.validation.constraints.Future;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 
@@ -22,14 +24,17 @@ public class EventFullDto {
 
     private Long id;
 
+    @Size(min = 20,max = 2000)
     private String annotation;
 
     private Long category;
 
     private LocalDateTime createdOn;
 
+    @Size(min = 20,max = 7000)
     private String description;
 
+    @Future
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
 
@@ -48,6 +53,7 @@ public class EventFullDto {
 
     private State state;
 
+    @Size(min = 3,max = 120)
     private String title;
 
     private StateAction stateAction;

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.Services.CategoryService;
+import ru.practicum.Services.CompilationService;
 import ru.practicum.Services.EventService;
 import ru.practicum.exceptions.NotFoundEntityException;
 
@@ -29,6 +30,8 @@ public class PublicController {
     private final CategoryService categoryService;
 
     private final EventService eventService;
+
+    private final CompilationService compilationService;
 
 
     @GetMapping("/events")
@@ -53,9 +56,22 @@ public class PublicController {
             rangeEnd = LocalDateTime.now().plusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         }
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request.getRequestURI(), request.getRemoteAddr()));
+        if (LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).isAfter(LocalDateTime.parse(rangeEnd, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))) {
+            Map<String, Object> response = new LinkedHashMap<>();
+
+            response.put("status", HttpStatus.NOT_FOUND.name());
+            response.put("reason", HttpStatus.NOT_FOUND.getReasonPhrase());
+            response.put("message", "Неверно указаны даты");
+            response.put("timestamp", LocalDateTime.now());
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(response);
+        } else
+
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request.getRemoteAddr(), request.getRequestURI()));
     }
 
 
@@ -67,7 +83,7 @@ public class PublicController {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(eventService.getPublicEventById(eventId, request.getRequestURI(), request.getRemoteAddr()));
+                .body(eventService.getPublicEventById(eventId, request.getRemoteAddr(), request.getRequestURI()));
     }
 
 
@@ -83,6 +99,37 @@ public class PublicController {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(response);
+    }
+
+
+    @GetMapping("/categories")
+    public ResponseEntity<Object> getCategories(@RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                                @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
+        log.info("Get categories with  from={}, size={}", from, size);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(categoryService.getCategories(from, size));
+    }
+
+    @GetMapping("/categories/{catId}")
+    public ResponseEntity<Object> getCategory(@PathVariable Long catId) {
+        log.info("Get categories/{}", catId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(categoryService.getCategory(catId));
+    }
+
+    @GetMapping("/compilations")
+    public ResponseEntity<Object> getCompilations(@RequestParam(required = false) Boolean pinned,
+                                                  @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                                  @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
+        log.info("Get compilations with pinned={}  from={}, size={}",pinned, from, size);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(compilationService.getCompilations(pinned,from, size));
     }
 
 //private final ItemClient itemClient;

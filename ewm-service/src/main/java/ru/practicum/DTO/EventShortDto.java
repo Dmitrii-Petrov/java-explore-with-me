@@ -37,5 +37,7 @@ public class EventShortDto {
     @Enumerated(EnumType.STRING)
     private String title;
 
+    private String description;
+
     private Long views;
 }

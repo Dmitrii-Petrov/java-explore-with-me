@@ -15,4 +15,5 @@ public interface EventCompilationRepository extends JpaRepository<EventCompilati
     void deleteAllByEventNotIn(List<Event> list);
 
     List<EventCompilation> findAllByEventIn(List<Event> list);
+    List<EventCompilation> findAllByCompilation(Compilation compilation);
 }

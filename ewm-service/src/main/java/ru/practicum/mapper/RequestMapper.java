@@ -3,6 +3,7 @@ package ru.practicum.mapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.DTO.RequestDto;
+import ru.practicum.DTO.RequestGetDto;
 import ru.practicum.model.Request;
 
 @Component
@@ -16,6 +17,15 @@ public class RequestMapper {
                 request.getRequester(),
                 request.getStatus(),
                 null);
+    }
+
+    public static RequestGetDto requestToGetDto(Request request) {
+        return new RequestGetDto(request.getId(),
+                request.getCreated(),
+                request.getEvent().getId(),
+                request.getRequester(),
+                request.getStatus()
+                );
     }
 
 

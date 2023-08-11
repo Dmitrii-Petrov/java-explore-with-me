@@ -6,16 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.DTO.CategoryDto;
-import ru.practicum.DTO.EventFullDto;
-import ru.practicum.DTO.NewCompilationDto;
-import ru.practicum.DTO.UserDto;
+import ru.practicum.DTO.*;
 import ru.practicum.Services.CategoryService;
 import ru.practicum.Services.CompilationService;
 import ru.practicum.Services.EventService;
 import ru.practicum.Services.UserService;
-import ru.practicum.exceptions.DuplicateNameException;
-import ru.practicum.exceptions.FailCategoryNameException;
+import ru.practicum.exceptions.BadEntityException;
+import ru.practicum.exceptions.FailNameException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -65,26 +62,12 @@ public class AdminController {
         log.info("Patch category with Id = {}, body = {}", catId, categoryDto);
 
         return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
+                .status(HttpStatus.OK)
                 .body(categoryService.patchCategory(catId, categoryDto));
     }
 
-    @ExceptionHandler(value = {FailCategoryNameException.class})
-    public ResponseEntity<Object> handleUnknownStateException(final FailCategoryNameException ex) {
-        Map<String, Object> response = new LinkedHashMap<>();
-
-        response.put("status", HttpStatus.BAD_REQUEST.name());
-        response.put("reason", HttpStatus.BAD_REQUEST.getReasonPhrase());
-        response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
-    }
-
-    @ExceptionHandler(value = {DuplicateNameException.class})
-    public ResponseEntity<Object> handleUnknownStateException(final DuplicateNameException ex) {
+    @ExceptionHandler(value = {FailNameException.class})
+    public ResponseEntity<Object> handleUnknownStateException(final FailNameException ex) {
         Map<String, Object> response = new LinkedHashMap<>();
 
         response.put("status", HttpStatus.CONFLICT.name());
@@ -97,6 +80,19 @@ public class AdminController {
                 .body(response);
     }
 
+    @ExceptionHandler(value = {BadEntityException.class})
+    public ResponseEntity<Object> handleUnknownStateException(final BadEntityException ex) {
+        Map<String, Object> response = new LinkedHashMap<>();
+
+        response.put("status", HttpStatus.CONFLICT.name());
+        response.put("reason", HttpStatus.CONFLICT.getReasonPhrase());
+        response.put("message", ex.getMessage());
+        response.put("timestamp", LocalDateTime.now());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
 
     @PatchMapping("/events/{eventId}")
     public ResponseEntity<Object> patchEvent(@PathVariable @NotNull @PositiveOrZero Long eventId, @RequestBody @Valid EventFullDto eventFullDto) {
@@ -163,12 +159,12 @@ public class AdminController {
 
 
     @PostMapping("/compilations")
-    public ResponseEntity<Object> postCompilation(@RequestBody NewCompilationDto newCompilationDto) {
-        log.info("Post /compilations {}", newCompilationDto);
+    public ResponseEntity<Object> postCompilation(@RequestBody @Valid CompilationNewDto compilationNewDto) {
+        log.info("Post /compilations {}", compilationNewDto);
 
         return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(compilationService.postCompilation(newCompilationDto));
+                .status(HttpStatus.CREATED)
+                .body(compilationService.postCompilation(compilationNewDto));
     }
 
     @DeleteMapping("/compilations/{compId}")
@@ -182,12 +178,12 @@ public class AdminController {
     }
 
     @PatchMapping("/compilations/{compId}")
-    public ResponseEntity<Object> postCompilation(@PathVariable Long compId, @RequestBody NewCompilationDto newCompilationDto) {
-        log.info("Patch /compilations/{} with {}", compId, newCompilationDto);
+    public ResponseEntity<Object> postCompilation(@PathVariable Long compId, @RequestBody @Valid CompilationPatchDto compilationNewDto) {
+        log.info("Patch /compilations/{} with {}", compId, compilationNewDto);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(compilationService.patchCompilation(compId, newCompilationDto));
+                .body(compilationService.patchCompilation(compId, compilationNewDto));
     }
 
 

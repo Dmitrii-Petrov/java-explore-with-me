@@ -29,6 +29,8 @@ public class StatClient {
         String urlTemplate = UriComponentsBuilder.fromHttpUrl("http://localhost:9090/stats")
                 .queryParam("start", "{start}")
                 .queryParam("end", "{end}")
+                .queryParam("uris","{uris}")
+                .queryParam("unique","{unique}")
                 .encode()
                 .toUriString();
         return rest.exchange(urlTemplate, HttpMethod.GET, null, StatDTO[].class,parameters);

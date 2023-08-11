@@ -10,8 +10,10 @@ import ru.practicum.model.User;
 import ru.practicum.model.enums.State;
 import ru.practicum.model.enums.StateAction;
 
+import javax.validation.constraints.Future;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 
@@ -26,6 +28,7 @@ public class EventCreationDto {
 
     @NotNull
     @NotBlank
+    @Size(min = 20,max = 2000)
     private String annotation;
 
     private Long category;
@@ -35,8 +38,10 @@ public class EventCreationDto {
 
     @NotNull
     @NotBlank
+    @Size(min = 20,max = 7000)
     private String description;
 
+    @Future
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
 
@@ -44,17 +49,18 @@ public class EventCreationDto {
 
     private Location location;
 
-    private Boolean paid;
+    private Boolean paid = false;
 
-    private Long participantLimit;
+    private Long participantLimit =0L;
 
 
     private LocalDateTime publishedOn;
 
-    private Boolean requestModeration;
+    private Boolean requestModeration =true;
 
     private State state;
 
+    @Size(min = 3,max = 120)
     private String title;
 
     private StateAction stateAction;

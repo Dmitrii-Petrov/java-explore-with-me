@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.DTO.UserDto;
+import ru.practicum.exceptions.FailNameException;
 import ru.practicum.model.User;
 import ru.practicum.storage.UserRepository;
 
@@ -25,7 +26,12 @@ public class UserService {
 
     public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
         Pageable page = PageRequest.of(from / size, size);
-        Page<User> userPage = userRepository.findByIdIn(ids,page);
+        Page<User> userPage;
+        if (ids != null) {
+            userPage = userRepository.findByIdIn(ids, page);
+        } else {
+            userPage = userRepository.findAll(page);
+        }
 
         List<UserDto> result = new ArrayList<>();
         userPage.getContent().forEach(user -> {
@@ -38,32 +44,18 @@ public class UserService {
 
     }
 
-    public UserDto saveUser (UserDto userDto){
+    public UserDto saveUser(UserDto userDto) {
+        if (userRepository.existsByName(userDto.getName())){
+            throw new FailNameException("пользователь с таким именем уже существует");
+        }
+
         User user = userRepository.save(dtoToUser(userDto));
         userDto.setId(user.getId());
         return userDto;
     }
 
-    public void deleteUser (Long id){
+    public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
-
-
-//
-//    public CategoryDto postCategory(CategoryDto categoryDto) {
-//        return categoryToDto(categoryRepository.save(dtoToCategory(categoryDto)));
-//
-//    }
-//
-//    public void deleteCategory(Long id) {
-//        categoryRepository.deleteById(id);
-//    }
-//
-//    public CategoryDto patchCategory(Long catId, CategoryDto categoryDto) {
-//
-//        Category category = dtoToCategory(categoryDto);
-//        category.setId(catId);
-//        return categoryToDto(categoryRepository.save(category));
-//    }
 
 }

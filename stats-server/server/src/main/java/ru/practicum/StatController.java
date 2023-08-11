@@ -23,11 +23,19 @@ public class StatController {
     private final StatService statService;
 
     @GetMapping("/stats")
-    public ResponseEntity<Object> getStats(@RequestParam String start,
-                                           @RequestParam String end,
+    public ResponseEntity<Object> getStats(@RequestParam(required = false) String start,
+                                           @RequestParam(required = false) String end,
                                            @RequestParam(required = false) List<String> uris,
                                            @RequestParam(required = false, defaultValue = "false") Boolean unique) {
-        log.info("поулчен запрос GET /stats");
+        log.info("поулчен запрос GET /stats with start={}, end={},uris={},unique={}",start,end,uris,unique);
+
+        if (start == null) {
+            start = LocalDateTime.now().minusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        }
+        if (end == null) {
+            end = LocalDateTime.now().plusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        }
+
 
         if (LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).isAfter(LocalDateTime.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))) {
             Map<String, Object> response = new LinkedHashMap<>();

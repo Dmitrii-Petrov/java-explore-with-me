@@ -44,6 +44,7 @@ public class EventMapper {
         eventShortDto.setInitiator(event.getInitiator());
         eventShortDto.setPaid(event.getPaid());
         eventShortDto.setTitle(event.getTitle());
+        eventShortDto.setDescription(event.getDescription());
         return eventShortDto;
     }
 
