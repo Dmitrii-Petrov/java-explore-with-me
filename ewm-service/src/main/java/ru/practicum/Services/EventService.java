@@ -13,6 +13,7 @@ import ru.practicum.StatDTO;
 import ru.practicum.StatHitDTO;
 import ru.practicum.exceptions.BadEntityException;
 import ru.practicum.exceptions.NotFoundEntityException;
+import ru.practicum.exceptions.WrongParamsException;
 import ru.practicum.model.Event;
 import ru.practicum.model.QEvent;
 import ru.practicum.model.Request;
@@ -23,15 +24,14 @@ import ru.practicum.model.enums.Status;
 import ru.practicum.storage.*;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static ru.practicum.DateUtils.formatter;
 import static ru.practicum.mapper.EventMapper.*;
-import static ru.practicum.mapper.RequestMapper.requestToDto;
-import static ru.practicum.mapper.RequestMapper.requestToGetDto;
+import static ru.practicum.mapper.RequestMapper.requestToShortDto;
 
 @Service
 @RequiredArgsConstructor
@@ -47,11 +47,18 @@ public class EventService {
 
     private final StatClient statClient;
 
-    public EventFullDto postEvent(EventCreationDto eventFullDto, Long userId) {
-        locationRepository.save(eventFullDto.getLocation());
-        eventFullDto.setCreatedOn(LocalDateTime.now());
-        return eventToFullDto(eventRepository.save(dtoToEvent(eventFullDto, categoryRepository.findById(eventFullDto.getCategory()).get(), userRepository.findById(userId).get())));
+    public EventCreationAnswerDto postEvent(EventCreationDto eventCreationDto, Long userId) {
 
+        if (eventCreationDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
+            throw new BadEntityException("начало ивента - минимум через 2 часа");
+        }
+
+        locationRepository.save(eventCreationDto.getLocation());
+        eventCreationDto.setCreatedOn(LocalDateTime.now());
+
+        Event event = dtoToEvent(eventCreationDto, categoryRepository.findById(eventCreationDto.getCategory()).get(), userRepository.findById(userId).get());
+
+        return eventToCreationAnswerDto(eventRepository.save(event));
     }
 
 
@@ -84,17 +91,29 @@ public class EventService {
         Pageable page = PageRequest.of(from / size, size);
         List<EventShortDto> result = new ArrayList<>();
 
+        if (rangeStart == null) {
+            rangeStart = LocalDateTime.now().format(formatter);
+        }
+        if (rangeEnd == null) {
+            rangeEnd = LocalDateTime.now().plusYears(1000).format(formatter);
+        }
+
+        if (LocalDateTime.parse(rangeStart, formatter).isAfter(LocalDateTime.parse(rangeEnd, formatter))) {
+            throw new WrongParamsException("неверные даты в фильтре");
+        }
+
+
         Page<Event> eventPage;
 
-        BooleanExpression byStartDate = QEvent.event.eventDate.after(LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        BooleanExpression byEndDate = QEvent.event.eventDate.before(LocalDateTime.parse(rangeEnd, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        BooleanExpression byStartDate = QEvent.event.eventDate.after(LocalDateTime.parse(rangeStart, formatter));
+        BooleanExpression byEndDate = QEvent.event.eventDate.before(LocalDateTime.parse(rangeEnd, formatter));
 
         if ((paid != null) && (categories != null) && (text != null)) {
             BooleanExpression byPaid = QEvent.event.paid.eq(paid);
             BooleanExpression byCategoryIn = QEvent.event.category.id.in(categories);
             BooleanExpression byDescriptionSearch = QEvent.event.description.containsIgnoreCase(text);
             BooleanExpression byAnnotationSearch = QEvent.event.annotation.containsIgnoreCase(text);
-            eventPage = eventRepository.findAll(byPaid.and(byCategoryIn.and(byDescriptionSearch.and(byAnnotationSearch.and(byStartDate.and(byEndDate))))), page);
+            eventPage = eventRepository.findAll(byPaid.and(byCategoryIn.and(byStartDate.and(byEndDate.and(byDescriptionSearch.or(byAnnotationSearch))))), page);
         } else if ((paid != null) && (categories != null)) {
             BooleanExpression byPaid = QEvent.event.paid.eq(paid);
             BooleanExpression byCategoryIn = QEvent.event.category.id.in(categories);
@@ -103,12 +122,12 @@ public class EventService {
             BooleanExpression byPaid = QEvent.event.paid.eq(paid);
             BooleanExpression byDescriptionSearch = QEvent.event.description.containsIgnoreCase(text);
             BooleanExpression byAnnotationSearch = QEvent.event.annotation.containsIgnoreCase(text);
-            eventPage = eventRepository.findAll(byPaid.and(byDescriptionSearch.and(byAnnotationSearch.and(byStartDate.and(byEndDate)))), page);
+            eventPage = eventRepository.findAll(byPaid.and(byStartDate.and(byEndDate.and(byDescriptionSearch.or(byAnnotationSearch)))), page);
         } else if ((categories != null) && (text != null)) {
             BooleanExpression byCategoryIn = QEvent.event.category.id.in(categories);
             BooleanExpression byDescriptionSearch = QEvent.event.description.containsIgnoreCase(text);
             BooleanExpression byAnnotationSearch = QEvent.event.annotation.containsIgnoreCase(text);
-            eventPage = eventRepository.findAll(byCategoryIn.and(byDescriptionSearch.and(byAnnotationSearch.and(byStartDate.and(byEndDate)))), page);
+            eventPage = eventRepository.findAll(byCategoryIn.and(byStartDate.and(byEndDate.and(byDescriptionSearch.or(byAnnotationSearch)))), page);
         } else if (categories != null) {
             BooleanExpression byCategoryIn = QEvent.event.category.id.in(categories);
             eventPage = eventRepository.findAll(byCategoryIn.and(byStartDate.and(byEndDate)), page);
@@ -118,22 +137,21 @@ public class EventService {
         } else if (text != null) {
             BooleanExpression byDescriptionSearch = QEvent.event.description.containsIgnoreCase(text);
             BooleanExpression byAnnotationSearch = QEvent.event.annotation.containsIgnoreCase(text);
-            eventPage = eventRepository.findAll(byDescriptionSearch.and(byAnnotationSearch.and(byStartDate.and(byEndDate))), page);
+            eventPage = eventRepository.findAll(byStartDate.and(byEndDate.and(byDescriptionSearch.or(byAnnotationSearch))), page);
         } else eventPage = eventRepository.findAll(byEndDate.and(byStartDate), page);
 
 
-        statClient.postHit(new StatHitDTO("ewm-service", uri, ip, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        statClient.postHit(new StatHitDTO("ewm-service", uri, ip, LocalDateTime.now().format(formatter)));
 
         eventPage.getContent().forEach(event1 -> {
-            result.add(eventToShortDto(event1));
+            EventShortDto eventShortDto = eventToShortDto(event1);
+            result.add(eventShortDto);
         });
 
         if (result.size() > from % size) {
             return result.subList(from % size, result.size());
         } else return new ArrayList<>();
     }
-
-    // TODO по тестам
 
 
     public List<EventFullDto> getAdminEvents(List<Long> users,
@@ -148,8 +166,8 @@ public class EventService {
 
         Page<Event> eventPage;
 
-        BooleanExpression byStartDate = QEvent.event.eventDate.after(LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        BooleanExpression byEndDate = QEvent.event.eventDate.before(LocalDateTime.parse(rangeEnd, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        BooleanExpression byStartDate = QEvent.event.eventDate.after(LocalDateTime.parse(rangeStart, formatter));
+        BooleanExpression byEndDate = QEvent.event.eventDate.before(LocalDateTime.parse(rangeEnd, formatter));
 
         if ((users != null) && (states != null) && (categories != null)) {
 
@@ -230,10 +248,10 @@ public class EventService {
             throw new NotFoundEntityException("Event with id=" + eventId + " was not found");
         }
         EventFullDto eventFullDto = eventToFullDto(event);
-        statClient.postHit(new StatHitDTO("ewm-service", uri, ip, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
-        StatDTO[] statDTOList = statClient.getStatDTOs(Map.of("start", LocalDateTime.now().minusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                "end", LocalDateTime.now().plusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                "uris", List.of(uri),
+        statClient.postHit(new StatHitDTO("ewm-service", uri, ip, LocalDateTime.now().format(formatter)));
+        StatDTO[] statDTOList = statClient.getStatDTOs(Map.of("start", LocalDateTime.now().minusYears(1000).format(formatter),
+                "end", LocalDateTime.now().plusYears(1000).format(formatter),
+                "uris", uri,
                 "unique", true)
         ).getBody();
 
@@ -250,16 +268,15 @@ public class EventService {
     public EventFullDto patchEventByAdmin(Long eventId, EventFullDto eventFullDto) {
 
 
-
         Event event = eventRepository.findById(eventId).get();
 
-        if ((event.getState()==State.PUBLISHED)&&(eventFullDto.getStateAction() == StateAction.PUBLISH_EVENT)){
+        if ((event.getState() == State.PUBLISHED) && (eventFullDto.getStateAction() == StateAction.PUBLISH_EVENT)) {
             throw new BadEntityException("событие уже опубликовано");
         }
-        if ((event.getState()==State.CANCELED)&&(eventFullDto.getStateAction() == StateAction.PUBLISH_EVENT)){
+        if ((event.getState() == State.CANCELED) && (eventFullDto.getStateAction() == StateAction.PUBLISH_EVENT)) {
             throw new BadEntityException("событие уже оменено");
         }
-        if ((event.getState()==State.PUBLISHED)&&(eventFullDto.getStateAction() == StateAction.REJECT_EVENT)){
+        if ((event.getState() == State.PUBLISHED) && (eventFullDto.getStateAction() == StateAction.REJECT_EVENT)) {
             throw new BadEntityException("событие уже опубликовано");
         }
 
@@ -306,9 +323,9 @@ public class EventService {
     public EventFullDto getEventByUser(Long userId, Long eventId) {
         EventFullDto eventFullDto = eventToFullDto(eventRepository.findById(eventId).get());
 
-        Map<String, Object> parameters = Map.of("start", (LocalDateTime.now().minusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))),
-                "end", (LocalDateTime.now().plusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))),
-                "uris", List.of("/event/" + eventId),
+        Map<String, Object> parameters = Map.of("start", (LocalDateTime.now().minusYears(1000).format(formatter)),
+                "end", (LocalDateTime.now().plusYears(1000).format(formatter)),
+                "uris", "/event/" + eventId,
                 "unique", true);
 
         StatDTO[] statDTOList = statClient.getStatDTOs(parameters).getBody();
@@ -322,8 +339,16 @@ public class EventService {
         return eventFullDto;
     }
 
-    public EventFullDto patchEventByUser(Long userId, Long eventId, EventFullDto eventFullDto) {
+    public EventCreationAnswerDto patchEventByUser(Long userId, Long eventId, EventFullDto eventFullDto) {
         Event event = eventRepository.findById(eventId).get();
+
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new NotFoundEntityException("у юзера такого ивента нет");
+        }
+
+        if (event.getState() == State.PUBLISHED) {
+            throw new BadEntityException("событие уже опубликовано");
+        }
 
         if (eventFullDto.getCategory() != null) {
             event.setCategory(categoryRepository.findById(eventFullDto.getCategory()).get());
@@ -359,18 +384,18 @@ public class EventService {
             event.setTitle(eventFullDto.getTitle());
         }
 
-        return eventToFullDto(eventRepository.save(event));
+        return eventToCreationAnswerDto(eventRepository.save(event));
     }
 
 
-    public List<RequestGetDto> getRequestsByUser(Long userId, Long eventId) {
+    public List<RequestShortDto> getRequestsByUser(Long userId, Long eventId) {
 
         Event event = eventRepository.findById(eventId).get();
 
-        List<RequestGetDto> result = new ArrayList<>();
+        List<RequestShortDto> result = new ArrayList<>();
         List<Request> requestList = requestRepository.findAllByEvent(event);
         requestList.forEach(request -> {
-            result.add(requestToGetDto(request));
+            result.add(requestToShortDto(request));
         });
 
         return result;
@@ -382,6 +407,7 @@ public class EventService {
             throw new NotFoundEntityException("User with id=" + userId + " was not found");
         }
 
+
         Event event = eventRepository.findByIdAndInitiator(eventId, userRepository.findById(userId).get());
         if (event == null) {
             throw new NotFoundEntityException("Event with id=" + eventId + " was not found");
@@ -392,12 +418,20 @@ public class EventService {
         RequestUpdateDto requestUpdateDto = new RequestUpdateDto();
 
         requests.forEach(request -> {
+            if (request.getStatus() == Status.CONFIRMED) {
+                throw new BadEntityException("завявка уже была принята");
+            }
+
+            if ((event.getParticipantLimit() != 0) && (event.getParticipantLimit() <= requestRepository.countAllByEventAndStatusIs(event, Status.CONFIRMED))) {
+                throw new BadEntityException("превышено число участников");
+            }
             request.setStatus(requestDto.getStatus());
 
             if (request.getStatus() == Status.REJECTED) {
                 requestUpdateDto.getRejectedRequests().add(new RequestShortDto(request.getId(), request.getCreated(), request.getEvent().getId(), request.getRequester().getId(), request.getStatus()));
             }
             if (request.getStatus() == Status.CONFIRMED) {
+
                 requestUpdateDto.getConfirmedRequests().add(new RequestShortDto(request.getId(), request.getCreated(), request.getEvent().getId(), request.getRequester().getId(), request.getStatus()));
             }
         });
@@ -407,43 +441,57 @@ public class EventService {
     }
 
 
-    public List<RequestDto> getRequests(Long userId) {
-        List<RequestDto> requestDtoList = new ArrayList<>();
+    public List<RequestShortDto> getRequests(Long userId) {
+        List<RequestShortDto> requestDtoList = new ArrayList<>();
         User user = userRepository.findById(userId).get();
         List<Request> requests = requestRepository.findAllByRequester(user);
         requests.forEach(request -> {
-            requestDtoList.add(requestToDto(request));
+            requestDtoList.add(requestToShortDto(request));
         });
         return requestDtoList;
 
     }
 
-    public RequestGetDto postRequest(Long userId, Long eventId) {
+    public RequestShortDto postRequest(Long userId, Long eventId) {
+
+        Event event = eventRepository.findById(eventId).get();
+
+
+        if (event.getInitiator().getId().equals(userId)) {
+            throw new BadEntityException("получен запрос на учистие от инициатора ивента");
+        }
+
+        if (event.getState() != State.PUBLISHED) {
+            throw new BadEntityException("ивент еще не опубликован");
+        }
+
+        if ((event.getParticipantLimit() != 0) && (event.getParticipantLimit() <= requestRepository.countAllByEventAndStatusIs(event, Status.CONFIRMED))) {
+            throw new BadEntityException("превышено число участников");
+        }
+
+        if (!requestRepository.findAllByEventAndRequester(event, userRepository.findById(userId).get()).isEmpty()) {
+            throw new BadEntityException("реквест на данный ивент уже существует");
+        }
 
         Request request = new Request();
         request.setCreated(LocalDateTime.now());
-        request.setEvent(eventRepository.findById(eventId).get());
+        request.setEvent(event);
         request.setRequester(userRepository.findById(userId).get());
-        request.setStatus(Status.PENDING);
+        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
+            request.setStatus(Status.CONFIRMED);
+        } else {
+            request.setStatus(Status.PENDING);
+        }
 
-        return requestToGetDto(requestRepository.save(request));
+        return requestToShortDto(requestRepository.save(request));
     }
 
-    public RequestDto cancelRequest(Long userId, Long eventId) {
+    public RequestShortDto cancelRequest(Long userId, Long eventId) {
 
         Request request = requestRepository.findById(eventId).get();
-        request.setStatus(Status.PENDING);
+        request.setStatus(Status.CANCELED);
 
-        return requestToDto(requestRepository.save(request));
+        return requestToShortDto(requestRepository.save(request));
 
     }
-
-
-//    public CategoryDto patchCategory(Long catId, CategoryDto categoryDto) {
-//
-//        Category category = dtoToCategory(categoryDto);
-//        category.setId(catId);
-//        return categoryToDto(categoryRepository.save(category));
-//    }
-
 }

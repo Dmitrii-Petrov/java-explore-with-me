@@ -24,6 +24,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ru.practicum.DateUtils.formatter;
+
 @RestController
 @RequestMapping("/admin")
 @Slf4j
@@ -116,7 +118,7 @@ public class AdminController {
                 users, states, categories, rangeStart, rangeEnd, from, size);
 
         if (rangeStart == null) {
-            rangeStart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            rangeStart = LocalDateTime.now().format(formatter);
         }
         if (rangeEnd == null) {
             rangeEnd = LocalDateTime.now().plusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -173,7 +175,7 @@ public class AdminController {
 
         compilationService.deleteCompilation(compId);
         return ResponseEntity
-                .status(HttpStatus.OK)
+                .status(HttpStatus.NO_CONTENT)
                 .body(null);
     }
 

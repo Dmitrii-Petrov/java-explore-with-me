@@ -5,12 +5,12 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.DateUtils.formatter;
+
 
 @Component
 @AllArgsConstructor
 public class StatMapper {
-
-    private static final DateUtils dateUtils = new DateUtils();
 
     public static Stat mapToNewStat(StatHitDTO statHitDTO) {
         Stat stat = new Stat();
@@ -19,7 +19,7 @@ public class StatMapper {
         stat.setUri(statHitDTO.getUri());
         stat.setTimestamp(LocalDateTime.parse(
                 statHitDTO.getTimestamp(),
-                dateUtils.myFormatObj));
+                formatter));
         return stat;
     }
 }

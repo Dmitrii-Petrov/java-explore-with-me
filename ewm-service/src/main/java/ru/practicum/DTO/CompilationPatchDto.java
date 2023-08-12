@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +20,8 @@ public class CompilationPatchDto {
     private Boolean pinned = false;
 
 
-    @NotBlank
-    @Size(max = 50,min = 1)
+    //    @NotBlank
+    @Size(max = 50, min = 1)
     private String title;
 
 }

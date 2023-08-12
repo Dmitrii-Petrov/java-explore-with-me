@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,29 +48,9 @@ public class PublicController {
         log.info("Get events with text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}",
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 
-        if (rangeStart == null) {
-            rangeStart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        }
-        if (rangeEnd == null) {
-            rangeEnd = LocalDateTime.now().plusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        }
-
-        if (LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).isAfter(LocalDateTime.parse(rangeEnd, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))) {
-            Map<String, Object> response = new LinkedHashMap<>();
-
-            response.put("status", HttpStatus.NOT_FOUND.name());
-            response.put("reason", HttpStatus.NOT_FOUND.getReasonPhrase());
-            response.put("message", "Неверно указаны даты");
-            response.put("timestamp", LocalDateTime.now());
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(response);
-        } else
-
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request.getRemoteAddr(), request.getRequestURI()));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request.getRemoteAddr(), request.getRequestURI()));
     }
 
 
@@ -125,57 +104,20 @@ public class PublicController {
     public ResponseEntity<Object> getCompilations(@RequestParam(required = false) Boolean pinned,
                                                   @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                                   @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
-        log.info("Get compilations with pinned={}  from={}, size={}",pinned, from, size);
+        log.info("Get compilations with pinned={}  from={}, size={}", pinned, from, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(compilationService.getCompilations(pinned,from, size));
+                .body(compilationService.getCompilations(pinned, from, size));
     }
 
-//private final ItemClient itemClient;
-//
-//    @GetMapping
-//    public ResponseEntity<Object> getItems(@RequestHeader("X-Sharer-User-Id") Long userId,
-//                                           @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
-//                                           @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
-//        log.info("Get items with userId={}, from={}, size={}", userId, from, size);
-//        return itemClient.getItemsByUserId(userId, from, size);
-//    }
-//
-//    @GetMapping("/{itemId}")
-//    public ResponseEntity<Object> getItemById(@PathVariable @NotNull @PositiveOrZero Long itemId, @RequestHeader("X-Sharer-User-Id") @PositiveOrZero Long userId) {
-//        log.info("Get with itemId ={}, with userId={}", itemId, userId);
-//        return itemClient.getItemDtoByItemId(itemId, userId);
-//    }
-//
-//
-//    @PostMapping("/{itemId}/comment")
-//    public ResponseEntity<Object> addComment(@PathVariable @NotNull Long itemId,
-//                                             @RequestHeader("X-Sharer-User-Id") Long userId,
-//                                             @RequestBody @Valid CommentDto commentDto) {
-//        log.info("Post comment {} with itemId ={}, with userId={}", commentDto, itemId, userId);
-//        return itemClient.addComment(itemId, userId, commentDto);
-//    }
-//
-//    @GetMapping("/search")
-//    public ResponseEntity<Object> getItemsByTextSearch(@RequestHeader("X-Sharer-User-Id") Long userId,
-//                                                       @RequestParam String text,
-//                                                       @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
-//                                                       @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
-//        log.info("Get /search with text={} , from={}, size={}", text, from, size);
-//        return itemClient.getItemsByTextSearch(userId, text, from, size);
-//    }
-//
-//    @PostMapping()
-//    public ResponseEntity<Object> create(@RequestBody @Valid ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
-//        log.info("Post item {} with userId={}", itemDto, userId);
-//        return itemClient.create(itemDto, userId);
-//    }
-//
-//    @PatchMapping("/{itemId}")
-//    public ResponseEntity<Object> update(@PathVariable @NotNull Long itemId, @RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
-//        log.info("Patch item {} with itemId ={}, with userId={}", itemDto, itemId, userId);
-//        return itemClient.update(itemDto, itemId, userId);
-//    }
+    @GetMapping("/compilations/{compId}")
+    public ResponseEntity<Object> getCompilationsById(@PathVariable Long compId) {
+        log.info("Get compilations/{}", compId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(compilationService.getCompilationById(compId));
+    }
 
 }

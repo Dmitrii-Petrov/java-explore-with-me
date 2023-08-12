@@ -5,14 +5,11 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.model.Location;
+import ru.practicum.model.Category;
 import ru.practicum.model.User;
 import ru.practicum.model.enums.State;
-import ru.practicum.model.enums.StateAction;
 
 import javax.validation.constraints.Future;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
@@ -21,23 +18,19 @@ import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class EventCreationDto {
+public class EventCreationAnswerDto {
 
 
     private Long id;
 
-    @NotNull
-    @NotBlank
     @Size(min = 20, max = 2000)
     private String annotation;
 
-    private Long category;
+    private Category category;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn;
 
-    @NotNull
-    @NotBlank
     @Size(min = 20, max = 7000)
     private String description;
 
@@ -47,21 +40,23 @@ public class EventCreationDto {
 
     private User initiator;
 
-    private Location location;
+    private LocationDto location;
 
-    private Boolean paid = false;
+    private Boolean paid;
 
-    private Long participantLimit = 0L;
+    private Long participantLimit;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+
     private LocalDateTime publishedOn;
 
-    private Boolean requestModeration = true;
+    private Boolean requestModeration;
 
     private State state;
 
     @Size(min = 3, max = 120)
     private String title;
 
-    private StateAction stateAction;
+    private Long views;
+
+    private Long confirmedRequests;
 }

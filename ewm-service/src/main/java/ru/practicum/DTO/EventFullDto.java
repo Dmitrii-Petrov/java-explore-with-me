@@ -24,14 +24,14 @@ public class EventFullDto {
 
     private Long id;
 
-    @Size(min = 20,max = 2000)
+    @Size(min = 20, max = 2000)
     private String annotation;
 
     private Long category;
-
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn;
 
-    @Size(min = 20,max = 7000)
+    @Size(min = 20, max = 7000)
     private String description;
 
     @Future
@@ -53,7 +53,7 @@ public class EventFullDto {
 
     private State state;
 
-    @Size(min = 3,max = 120)
+    @Size(min = 3, max = 120)
     private String title;
 
     private StateAction stateAction;

@@ -45,7 +45,7 @@ public class UserService {
     }
 
     public UserDto saveUser(UserDto userDto) {
-        if (userRepository.existsByName(userDto.getName())){
+        if (userRepository.existsByName(userDto.getName())) {
             throw new FailNameException("пользователь с таким именем уже существует");
         }
 

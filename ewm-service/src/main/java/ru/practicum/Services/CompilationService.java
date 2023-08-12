@@ -19,6 +19,7 @@ import ru.practicum.storage.EventRepository;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ru.practicum.mapper.CompilationMapper.compilationToDto;
 import static ru.practicum.mapper.CompilationMapper.dtoToCompilation;
 import static ru.practicum.mapper.EventMapper.eventToShortDto;
 
@@ -76,12 +77,24 @@ public class CompilationService {
         if (compilationNewDto.getPinned() != null) {
             compilation.setPinned(compilationNewDto.getPinned());
         }
-        compilationRepository.save(compilation);
+        Compilation updCompilation = compilationRepository.save(compilation);
 
         List<Event> eventList = eventRepository.findAllById(compilationNewDto.getEvents());
         eventCompilationRepository.deleteAllByEventNotIn(eventList);
 
         CompilationDto compilationDto = new CompilationDto();
+
+        compilationNewDto.getEvents().forEach(eventId -> {
+            EventCompilation eventCompilation = new EventCompilation();
+            eventCompilation.setCompilation(updCompilation);
+            Event event = eventRepository.findById(eventId).get();
+            eventCompilation.setEvent(event);
+            compilationDto.getEvents().add(eventToShortDto(event));
+
+            eventCompilationRepository.save(eventCompilation);
+        });
+
+
         compilationDto.setId(compilation.getId());
         compilationDto.setTitle(compilation.getTitle());
         compilationDto.setPinned(compilation.getPinned());
@@ -124,6 +137,20 @@ public class CompilationService {
         if (compilationDtoList.size() > from % size) {
             return compilationDtoList.subList(from % size, compilationDtoList.size());
         } else return new ArrayList<>();
+
+    }
+
+
+    public CompilationDto getCompilationById(Long compId) {
+        Compilation compilation = compilationRepository.findById(compId).get();
+
+        CompilationDto compilationDto = compilationToDto(compilation);
+        List<EventCompilation> eventCompilationList = eventCompilationRepository.findAllByCompilation(compilation);
+        eventCompilationList.forEach(eventCompilation -> {
+            compilationDto.getEvents().add(eventToShortDto(eventCompilation.getEvent()));
+        });
+
+        return compilationDto;
 
     }
 

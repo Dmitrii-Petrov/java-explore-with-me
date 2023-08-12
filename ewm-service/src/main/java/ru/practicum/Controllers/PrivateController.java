@@ -9,14 +9,16 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.DTO.EventCreationDto;
 import ru.practicum.DTO.EventFullDto;
 import ru.practicum.DTO.RequestDto;
-import ru.practicum.Services.CategoryService;
 import ru.practicum.Services.EventService;
-import ru.practicum.Services.UserService;
+import ru.practicum.exceptions.BadEntityException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -24,9 +26,6 @@ import javax.validation.constraints.PositiveOrZero;
 @RequiredArgsConstructor
 @Validated
 public class PrivateController {
-
-    private final CategoryService categoryService;
-    private final UserService userService;
     private final EventService eventService;
 
     @GetMapping("/{userId}/events")
@@ -76,7 +75,7 @@ public class PrivateController {
 
     @GetMapping("/{userId}/events/{eventId}/requests")
     public ResponseEntity<Object> getRequestsByUser(@PathVariable @NotNull @PositiveOrZero Long userId,
-                                                   @PathVariable @NotNull @PositiveOrZero Long eventId) {
+                                                    @PathVariable @NotNull @PositiveOrZero Long eventId) {
         log.info("Get users/{}/events/{}/requests", userId, eventId);
 
         return ResponseEntity
@@ -121,55 +120,22 @@ public class PrivateController {
         log.info("Post users/{}/requests/{}/cancel", userId, requestId);
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(HttpStatus.OK)
                 .body(eventService.cancelRequest(userId, requestId));
     }
 
+    @ExceptionHandler(value = {BadEntityException.class})
+    public ResponseEntity<Object> handleUnknownStateException(final BadEntityException ex) {
+        Map<String, Object> response = new LinkedHashMap<>();
 
-//private final ItemClient itemClient;
-//
-//    @GetMapping
-//    public ResponseEntity<Object> getItems(@RequestHeader("X-Sharer-User-Id") Long userId,
-//                                           @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
-//                                           @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
-//        log.info("Get items with userId={}, from={}, size={}", userId, from, size);
-//        return itemClient.getItemsByUserId(userId, from, size);
-//    }
-//
-//    @GetMapping("/{itemId}")
-//    public ResponseEntity<Object> getItemById(@PathVariable @NotNull @PositiveOrZero Long itemId, @RequestHeader("X-Sharer-User-Id") @PositiveOrZero Long userId) {
-//        log.info("Get with itemId ={}, with userId={}", itemId, userId);
-//        return itemClient.getItemDtoByItemId(itemId, userId);
-//    }
-//
-//
-//    @PostMapping("/{itemId}/comment")
-//    public ResponseEntity<Object> addComment(@PathVariable @NotNull Long itemId,
-//                                             @RequestHeader("X-Sharer-User-Id") Long userId,
-//                                             @RequestBody @Valid CommentDto commentDto) {
-//        log.info("Post comment {} with itemId ={}, with userId={}", commentDto, itemId, userId);
-//        return itemClient.addComment(itemId, userId, commentDto);
-//    }
-//
-//    @GetMapping("/search")
-//    public ResponseEntity<Object> getItemsByTextSearch(@RequestHeader("X-Sharer-User-Id") Long userId,
-//                                                       @RequestParam String text,
-//                                                       @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
-//                                                       @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
-//        log.info("Get /search with text={} , from={}, size={}", text, from, size);
-//        return itemClient.getItemsByTextSearch(userId, text, from, size);
-//    }
-//
-//    @PostMapping()
-//    public ResponseEntity<Object> create(@RequestBody @Valid ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
-//        log.info("Post item {} with userId={}", itemDto, userId);
-//        return itemClient.create(itemDto, userId);
-//    }
-//
-//    @PatchMapping("/{itemId}")
-//    public ResponseEntity<Object> update(@PathVariable @NotNull Long itemId, @RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
-//        log.info("Patch item {} with itemId ={}, with userId={}", itemDto, itemId, userId);
-//        return itemClient.update(itemDto, itemId, userId);
-//    }
+        response.put("status", HttpStatus.CONFLICT.name());
+        response.put("reason", HttpStatus.CONFLICT.getReasonPhrase());
+        response.put("message", ex.getMessage());
+        response.put("timestamp", LocalDateTime.now());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
 
 }

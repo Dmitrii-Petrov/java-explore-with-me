@@ -14,7 +14,7 @@ public class CompilationDto {
 
     private Long id;
 
-    private List<EventShortDto> events =new ArrayList<>();
+    private List<EventShortDto> events = new ArrayList<>();
 
     private Boolean pinned;
 

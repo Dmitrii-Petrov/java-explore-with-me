@@ -20,20 +20,20 @@ public class StatClient {
     @Autowired
     public StatClient(RestTemplateBuilder builder) {
         this.rest = builder
-                .uriTemplateHandler(new DefaultUriBuilderFactory("http://localhost:9090"/*"http://stats-server:9090"*/))
+                .uriTemplateHandler(new DefaultUriBuilderFactory(/*"http://localhost:9090"*/"http://stats-server:9090"))
                 .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                 .build();
     }
 
     public ResponseEntity<StatDTO[]> getStatDTOs(Map<String, Object> parameters) {
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl("http://localhost:9090/stats")
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl("http://stats-server:9090/stats")
                 .queryParam("start", "{start}")
                 .queryParam("end", "{end}")
-                .queryParam("uris","{uris}")
-                .queryParam("unique","{unique}")
+                .queryParam("uris", "{uris}")
+                .queryParam("unique", "{unique}")
                 .encode()
                 .toUriString();
-        return rest.exchange(urlTemplate, HttpMethod.GET, null, StatDTO[].class,parameters);
+        return rest.exchange(urlTemplate, HttpMethod.GET, null, StatDTO[].class, parameters);
     }
 
     public ResponseEntity<StatHitDTO> postHit(StatHitDTO statHitDTO) {

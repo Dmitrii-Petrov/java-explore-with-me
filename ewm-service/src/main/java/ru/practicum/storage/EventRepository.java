@@ -8,8 +8,9 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.model.Event;
 import ru.practicum.model.User;
 import ru.practicum.model.enums.State;
+
 @Repository
-public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPredicateExecutor<Event>{
+public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPredicateExecutor<Event> {
 
     Page<Event> findByInitiator(User initiator, Pageable pageable);
 

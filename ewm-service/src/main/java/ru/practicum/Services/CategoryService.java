@@ -30,7 +30,7 @@ public class CategoryService {
     private final EventRepository eventRepository;
 
     public CategoryDto postCategory(CategoryDto categoryDto) {
-        if (categoryRepository.existsByName(categoryDto.getName())){
+        if (categoryRepository.existsByName(categoryDto.getName())) {
             throw new FailNameException("такая категория уже существует");
         }
         Category category = dtoToCategory(categoryDto);
@@ -39,17 +39,22 @@ public class CategoryService {
     }
 
     public void deleteCategory(Long id) {
-        if (eventRepository.existsAllByCategoryId(id)){
+        if (eventRepository.existsAllByCategoryId(id)) {
             throw new BadEntityException("у категории есть ивенты");
         }
         categoryRepository.deleteById(id);
     }
 
     public CategoryDto patchCategory(Long catId, CategoryDto categoryDto) {
-        if (categoryRepository.existsByName(categoryDto.getName())){
+
+        Category category = categoryRepository.findById(catId).get();
+        Category category1 = categoryRepository.findByName(categoryDto.getName());
+
+
+        if ((category1 != null) && (!(catId).equals(category1.getId()))) {
             throw new FailNameException("такая категория уже существует");
         }
-        Category category = categoryRepository.findById(catId).get();
+
         if (categoryDto.getName() != null) {
             category.setName(categoryDto.getName());
         }

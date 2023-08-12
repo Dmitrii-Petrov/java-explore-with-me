@@ -9,12 +9,12 @@ import ru.practicum.model.Category;
 @AllArgsConstructor
 public class CategoryMapper {
 
-    public static CategoryDto categoryToDto (Category category){
+    public static CategoryDto categoryToDto(Category category) {
         return new CategoryDto(category.getId(), category.getName());
     }
 
 
-    public static Category dtoToCategory (CategoryDto categoryDto){
+    public static Category dtoToCategory(CategoryDto categoryDto) {
         Category category = new Category();
         category.setName(categoryDto.getName());
         return category;

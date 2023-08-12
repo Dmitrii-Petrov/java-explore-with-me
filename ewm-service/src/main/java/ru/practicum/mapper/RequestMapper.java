@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.DTO.RequestDto;
 import ru.practicum.DTO.RequestGetDto;
+import ru.practicum.DTO.RequestShortDto;
 import ru.practicum.model.Request;
 
 @Component
@@ -25,7 +26,16 @@ public class RequestMapper {
                 request.getEvent().getId(),
                 request.getRequester(),
                 request.getStatus()
-                );
+        );
+    }
+
+    public static RequestShortDto requestToShortDto(Request request) {
+        return new RequestShortDto(request.getId(),
+                request.getCreated(),
+                request.getEvent().getId(),
+                request.getRequester().getId(),
+                request.getStatus()
+        );
     }
 
 

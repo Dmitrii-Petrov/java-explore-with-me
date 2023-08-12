@@ -10,18 +10,18 @@ import ru.practicum.model.Compilation;
 @AllArgsConstructor
 public class CompilationMapper {
 
-    public static CompilationDto compilationToDto (Compilation compilation){
+    public static CompilationDto compilationToDto(Compilation compilation) {
 
-       CompilationDto compilationDto = new CompilationDto();
-       compilationDto.setId(compilation.getId());
-       compilationDto.setPinned(compilation.getPinned());
-       compilationDto.setTitle(compilation.getTitle());
+        CompilationDto compilationDto = new CompilationDto();
+        compilationDto.setId(compilation.getId());
+        compilationDto.setPinned(compilation.getPinned());
+        compilationDto.setTitle(compilation.getTitle());
 
-       return compilationDto;
+        return compilationDto;
     }
 
 
-    public static Compilation dtoToCompilation (CompilationNewDto compilationDto){
+    public static Compilation dtoToCompilation(CompilationNewDto compilationDto) {
         Compilation compilation = new Compilation();
         compilation.setTitle(compilationDto.getTitle());
         compilation.setPinned(compilationDto.getPinned());

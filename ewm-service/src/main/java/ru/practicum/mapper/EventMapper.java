@@ -2,6 +2,7 @@ package ru.practicum.mapper;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import ru.practicum.DTO.EventCreationAnswerDto;
 import ru.practicum.DTO.EventCreationDto;
 import ru.practicum.DTO.EventFullDto;
 import ru.practicum.DTO.EventShortDto;
@@ -9,6 +10,9 @@ import ru.practicum.model.Category;
 import ru.practicum.model.Event;
 import ru.practicum.model.User;
 import ru.practicum.model.enums.State;
+
+import static ru.practicum.mapper.LocationMapper.locationToDto;
+import static ru.practicum.mapper.UserMapper.userToShortDto;
 
 @Component
 @AllArgsConstructor
@@ -34,17 +38,35 @@ public class EventMapper {
                 null);
     }
 
+    public static EventCreationAnswerDto eventToCreationAnswerDto(Event event) {
+        return new EventCreationAnswerDto(event.getId(),
+                event.getAnnotation(),
+                event.getCategory(),
+                event.getCreatedOn(),
+                event.getDescription(),
+                event.getEventDate(),
+                event.getInitiator(),
+                locationToDto(event.getLocation()),
+                event.getPaid(),
+                event.getParticipantLimit(),
+                event.getPublishedOn(),
+                event.getRequestModeration(),
+                event.getState(),
+                event.getTitle(),
+                0L,
+                0L);
+    }
+
 
     public static EventShortDto eventToShortDto(Event event) {
         EventShortDto eventShortDto = new EventShortDto();
         eventShortDto.setAnnotation(event.getAnnotation());
-        eventShortDto.setCategory(event.getCategory());
+        eventShortDto.setCategory(event.getCategory().getId());
         eventShortDto.setEventDate(event.getEventDate());
         eventShortDto.setId(event.getId());
-        eventShortDto.setInitiator(event.getInitiator());
+        eventShortDto.setInitiator(userToShortDto(event.getInitiator()));
         eventShortDto.setPaid(event.getPaid());
         eventShortDto.setTitle(event.getTitle());
-        eventShortDto.setDescription(event.getDescription());
         return eventShortDto;
     }
 

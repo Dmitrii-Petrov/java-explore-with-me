@@ -13,6 +13,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ru.practicum.DateUtils.formatter;
+
 @RestController
 @RequestMapping
 @Slf4j
@@ -27,7 +29,7 @@ public class StatController {
                                            @RequestParam(required = false) String end,
                                            @RequestParam(required = false) List<String> uris,
                                            @RequestParam(required = false, defaultValue = "false") Boolean unique) {
-        log.info("поулчен запрос GET /stats with start={}, end={},uris={},unique={}",start,end,uris,unique);
+        log.info("поулчен запрос GET /stats with start={}, end={},uris={},unique={}", start, end, uris, unique);
 
         if (start == null) {
             start = LocalDateTime.now().minusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -37,7 +39,7 @@ public class StatController {
         }
 
 
-        if (LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).isAfter(LocalDateTime.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))) {
+        if (LocalDateTime.parse(start, formatter).isAfter(LocalDateTime.parse(end, formatter))) {
             Map<String, Object> response = new LinkedHashMap<>();
 
             response.put("status", HttpStatus.NOT_FOUND.name());

@@ -7,6 +7,7 @@ import ru.practicum.model.Event;
 import ru.practicum.model.EventCompilation;
 
 import java.util.List;
+
 @Repository
 public interface EventCompilationRepository extends JpaRepository<EventCompilation, Long> {
 
@@ -15,5 +16,6 @@ public interface EventCompilationRepository extends JpaRepository<EventCompilati
     void deleteAllByEventNotIn(List<Event> list);
 
     List<EventCompilation> findAllByEventIn(List<Event> list);
+
     List<EventCompilation> findAllByCompilation(Compilation compilation);
 }
