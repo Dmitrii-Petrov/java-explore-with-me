@@ -8,7 +8,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,19 +24,11 @@ public class StatController {
     private final StatService statService;
 
     @GetMapping("/stats")
-    public ResponseEntity<Object> getStats(@RequestParam(required = false) String start,
-                                           @RequestParam(required = false) String end,
+    public ResponseEntity<Object> getStats(@RequestParam String start,
+                                           @RequestParam String end,
                                            @RequestParam(required = false) List<String> uris,
                                            @RequestParam(required = false, defaultValue = "false") Boolean unique) {
         log.info("поулчен запрос GET /stats with start={}, end={},uris={},unique={}", start, end, uris, unique);
-
-        if (start == null) {
-            start = LocalDateTime.now().minusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        }
-        if (end == null) {
-            end = LocalDateTime.now().plusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        }
-
 
         if (LocalDateTime.parse(start, formatter).isAfter(LocalDateTime.parse(end, formatter))) {
             Map<String, Object> response = new LinkedHashMap<>();
