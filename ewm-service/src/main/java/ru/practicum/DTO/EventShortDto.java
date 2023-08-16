@@ -10,6 +10,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import java.time.LocalDateTime;
 
+import static ru.practicum.DateUtils.DATE_FORMAT;
+
 
 @Data
 
@@ -23,7 +25,7 @@ public class EventShortDto {
 
     private Long category;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
     private LocalDateTime eventDate;
 
     private UserShortDto initiator;

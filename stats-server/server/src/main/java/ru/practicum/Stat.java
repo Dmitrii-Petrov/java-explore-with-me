@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+import static ru.practicum.DateUtils.DATE_FORMAT;
+
 @Data
 @Entity
 @AllArgsConstructor
@@ -24,7 +26,7 @@ public class Stat {
 
     private String ip;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
     private LocalDateTime timestamp;
 
 }

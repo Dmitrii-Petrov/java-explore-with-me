@@ -16,6 +16,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
+import static ru.practicum.DateUtils.DATE_FORMAT;
+
 
 @Data
 
@@ -33,7 +35,7 @@ public class EventCreationDto {
 
     private Long category;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
     private LocalDateTime createdOn;
 
     @NotNull
@@ -42,7 +44,7 @@ public class EventCreationDto {
     private String description;
 
     @Future
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
     private LocalDateTime eventDate;
 
     private User initiator;
@@ -53,7 +55,7 @@ public class EventCreationDto {
 
     private Long participantLimit = 0L;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
     private LocalDateTime publishedOn;
 
     private Boolean requestModeration = true;

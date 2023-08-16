@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static ru.practicum.DateUtils.formatter;
+import static ru.practicum.DateUtils.getErrorTime;
 
 @RestController
 @RequestMapping
@@ -35,8 +36,8 @@ public class StatController {
 
             response.put("status", HttpStatus.NOT_FOUND.name());
             response.put("reason", HttpStatus.NOT_FOUND.getReasonPhrase());
-            response.put("message", "Неверно указаны даты");
-            response.put("timestamp", LocalDateTime.now());
+            response.put("message", "wrong dates");
+            response.put("timestamp", getErrorTime());
 
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)

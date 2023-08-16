@@ -6,6 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.DTO.CategoryDto;
+import ru.practicum.DTO.CompilationDto;
+import ru.practicum.DTO.EventFullDto;
+import ru.practicum.DTO.EventShortDto;
 import ru.practicum.Services.CategoryService;
 import ru.practicum.Services.CompilationService;
 import ru.practicum.Services.EventService;
@@ -14,10 +18,11 @@ import ru.practicum.exceptions.NotFoundEntityException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static ru.practicum.DateUtils.getErrorTime;
 
 @RestController
 @RequestMapping
@@ -34,17 +39,17 @@ public class PublicController {
 
 
     @GetMapping("/events")
-    public ResponseEntity<Object> getEvents(@RequestParam(required = false) String text,
-                                            @RequestParam(required = false) List<Long> categories,
-                                            @RequestParam(required = false) Boolean paid,
-                                            @RequestParam(required = false) String rangeStart,
-                                            @RequestParam(required = false) String rangeEnd,
-                                            @RequestParam(defaultValue = "false") Boolean onlyAvailable,
-                                            //EVENT_DATE, VIEWS
-                                            @RequestParam(required = false) String sort,
-                                            @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
-                                            @RequestParam(name = "size", defaultValue = "10") @Positive Integer size,
-                                            HttpServletRequest request) {
+    public ResponseEntity<List<EventShortDto>> getEvents(@RequestParam(required = false) String text,
+                                                         @RequestParam(required = false) List<Long> categories,
+                                                         @RequestParam(required = false) Boolean paid,
+                                                         @RequestParam(required = false) String rangeStart,
+                                                         @RequestParam(required = false) String rangeEnd,
+                                                         @RequestParam(defaultValue = "false") Boolean onlyAvailable,
+                                                         //EVENT_DATE, VIEWS
+                                                         @RequestParam(required = false) String sort,
+                                                         @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                                         @RequestParam(name = "size", defaultValue = "10") @Positive Integer size,
+                                                         HttpServletRequest request) {
         log.info("Get events with text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}",
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 
@@ -55,8 +60,8 @@ public class PublicController {
 
 
     @GetMapping("/events/{eventId}")
-    public ResponseEntity<Object> getEventById(@PathVariable Long eventId,
-                                               HttpServletRequest request) {
+    public ResponseEntity<EventFullDto> getEventById(@PathVariable Long eventId,
+                                                     HttpServletRequest request) {
         log.info("Get event/{}", eventId);
 
 
@@ -67,13 +72,13 @@ public class PublicController {
 
 
     @ExceptionHandler(value = {NotFoundEntityException.class})
-    public ResponseEntity<Object> handleUnknownStateException(final NotFoundEntityException ex) {
+    public ResponseEntity<Map<String, Object>> handleUnknownStateException(final NotFoundEntityException ex) {
         Map<String, Object> response = new LinkedHashMap<>();
 
         response.put("status", HttpStatus.NOT_FOUND.name());
         response.put("reason", HttpStatus.NOT_FOUND.getReasonPhrase());
         response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
+        response.put("timestamp", getErrorTime());
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -82,8 +87,8 @@ public class PublicController {
 
 
     @GetMapping("/categories")
-    public ResponseEntity<Object> getCategories(@RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
-                                                @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
+    public ResponseEntity<List<CategoryDto>> getCategories(@RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                                           @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
         log.info("Get categories with  from={}, size={}", from, size);
 
         return ResponseEntity
@@ -92,7 +97,7 @@ public class PublicController {
     }
 
     @GetMapping("/categories/{catId}")
-    public ResponseEntity<Object> getCategory(@PathVariable Long catId) {
+    public ResponseEntity<CategoryDto> getCategory(@PathVariable Long catId) {
         log.info("Get categories/{}", catId);
 
         return ResponseEntity
@@ -101,9 +106,9 @@ public class PublicController {
     }
 
     @GetMapping("/compilations")
-    public ResponseEntity<Object> getCompilations(@RequestParam(required = false) Boolean pinned,
-                                                  @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
-                                                  @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
+    public ResponseEntity<List<CompilationDto>> getCompilations(@RequestParam(required = false) Boolean pinned,
+                                                                @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                                                @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
         log.info("Get compilations with pinned={}  from={}, size={}", pinned, from, size);
 
         return ResponseEntity
@@ -112,7 +117,7 @@ public class PublicController {
     }
 
     @GetMapping("/compilations/{compId}")
-    public ResponseEntity<Object> getCompilationsById(@PathVariable Long compId) {
+    public ResponseEntity<CompilationDto> getCompilationsById(@PathVariable Long compId) {
         log.info("Get compilations/{}", compId);
 
         return ResponseEntity

@@ -18,13 +18,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ru.practicum.DateUtils.formatter;
+import static ru.practicum.DateUtils.*;
 
 @RestController
 @RequestMapping("/admin")
@@ -42,7 +40,7 @@ public class AdminController {
 
 
     @PostMapping("/categories")
-    public ResponseEntity<Object> postCategory(@RequestBody @Valid CategoryDto categoryDto) {
+    public ResponseEntity<CategoryDto> postCategory(@RequestBody @Valid CategoryDto categoryDto) {
         log.info("Post category {} ", categoryDto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -51,7 +49,7 @@ public class AdminController {
 
 
     @DeleteMapping("/categories/{catId}")
-    public ResponseEntity<Object> deleteCategory(@PathVariable @NotNull @PositiveOrZero Long catId) {
+    public ResponseEntity<HttpStatus> deleteCategory(@PathVariable @NotNull @PositiveOrZero Long catId) {
         log.info("Delete category with Id = {} ", catId);
         categoryService.deleteCategory(catId);
         return ResponseEntity
@@ -60,7 +58,7 @@ public class AdminController {
     }
 
     @PatchMapping("/categories/{catId}")
-    public ResponseEntity<Object> patchCategory(@PathVariable @NotNull @PositiveOrZero Long catId, @RequestBody @Valid CategoryDto categoryDto) {
+    public ResponseEntity<CategoryDto> patchCategory(@PathVariable @NotNull @PositiveOrZero Long catId, @RequestBody @Valid CategoryDto categoryDto) {
         log.info("Patch category with Id = {}, body = {}", catId, categoryDto);
 
         return ResponseEntity
@@ -69,13 +67,13 @@ public class AdminController {
     }
 
     @ExceptionHandler(value = {FailNameException.class})
-    public ResponseEntity<Object> handleUnknownStateException(final FailNameException ex) {
+    public ResponseEntity<Map<String, Object>> handleUnknownStateException(final FailNameException ex) {
         Map<String, Object> response = new LinkedHashMap<>();
 
         response.put("status", HttpStatus.CONFLICT.name());
         response.put("reason", HttpStatus.CONFLICT.getReasonPhrase());
         response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
+        response.put("timestamp", getErrorTime());
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
@@ -83,13 +81,13 @@ public class AdminController {
     }
 
     @ExceptionHandler(value = {BadEntityException.class})
-    public ResponseEntity<Object> handleUnknownStateException(final BadEntityException ex) {
+    public ResponseEntity<Map<String, Object>> handleUnknownStateException(final BadEntityException ex) {
         Map<String, Object> response = new LinkedHashMap<>();
 
         response.put("status", HttpStatus.CONFLICT.name());
         response.put("reason", HttpStatus.CONFLICT.getReasonPhrase());
         response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
+        response.put("timestamp", getErrorTime());
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
@@ -97,7 +95,7 @@ public class AdminController {
     }
 
     @PatchMapping("/events/{eventId}")
-    public ResponseEntity<Object> patchEvent(@PathVariable @NotNull @PositiveOrZero Long eventId, @RequestBody @Valid EventFullDto eventFullDto) {
+    public ResponseEntity<EventFullDto> patchEvent(@PathVariable @NotNull @PositiveOrZero Long eventId, @RequestBody @Valid EventFullDto eventFullDto) {
         log.info("Patch events with eventId = {}, body = {}", eventId, eventFullDto);
 
         return ResponseEntity
@@ -107,21 +105,21 @@ public class AdminController {
 
 
     @GetMapping("/events")
-    public ResponseEntity<Object> getEventsByAdmin(@RequestParam(required = false) List<Long> users,
-                                                   @RequestParam(required = false) List<String> states,
-                                                   @RequestParam(required = false) List<Long> categories,
-                                                   @RequestParam(required = false) String rangeStart,
-                                                   @RequestParam(required = false) String rangeEnd,
-                                                   @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
-                                                   @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
+    public ResponseEntity<List<EventFullDto>> getEventsByAdmin(@RequestParam(required = false) List<Long> users,
+                                                               @RequestParam(required = false) List<String> states,
+                                                               @RequestParam(required = false) List<Long> categories,
+                                                               @RequestParam(required = false) String rangeStart,
+                                                               @RequestParam(required = false) String rangeEnd,
+                                                               @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                                               @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
         log.info("Get events with users={}, states={}, categories={}, rangeStart={}, rangeEnd={}, from={}, size={}",
                 users, states, categories, rangeStart, rangeEnd, from, size);
 
         if (rangeStart == null) {
-            rangeStart = LocalDateTime.now().format(formatter);
+            rangeStart = getNowTimeString();
         }
         if (rangeEnd == null) {
-            rangeEnd = LocalDateTime.now().plusYears(1000).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            rangeEnd = getDistantFutureTimeString();
         }
 
         return ResponseEntity
@@ -131,9 +129,9 @@ public class AdminController {
 
 
     @GetMapping("/users")
-    public ResponseEntity<Object> getUsers(@RequestParam(required = false) List<Long> ids,
-                                           @RequestParam(required = false, defaultValue = "0") Integer from,
-                                           @RequestParam(required = false, defaultValue = "10") Integer size) {
+    public ResponseEntity<List<UserDto>> getUsers(@RequestParam(required = false) List<Long> ids,
+                                                  @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                  @RequestParam(required = false, defaultValue = "10") Integer size) {
         log.info("Get users {}, from = {}, size ={}", ids, from, size);
 
         return ResponseEntity
@@ -142,7 +140,7 @@ public class AdminController {
     }
 
     @PostMapping("/users")
-    public ResponseEntity<Object> postUser(@RequestBody @Valid UserDto userDto) {
+    public ResponseEntity<UserDto> postUser(@RequestBody @Valid UserDto userDto) {
         log.info("Post users {}", userDto);
 
         return ResponseEntity
@@ -151,7 +149,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/users/{userId}")
-    public ResponseEntity<Object> deleteUser(@PathVariable @NotNull @PositiveOrZero Long userId) {
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable @NotNull @PositiveOrZero Long userId) {
         log.info("Delete user by id {}", userId);
         userService.deleteUser(userId);
         return ResponseEntity
@@ -161,7 +159,7 @@ public class AdminController {
 
 
     @PostMapping("/compilations")
-    public ResponseEntity<Object> postCompilation(@RequestBody @Valid CompilationNewDto compilationNewDto) {
+    public ResponseEntity<CompilationDto> postCompilation(@RequestBody @Valid CompilationNewDto compilationNewDto) {
         log.info("Post /compilations {}", compilationNewDto);
 
         return ResponseEntity
@@ -170,7 +168,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/compilations/{compId}")
-    public ResponseEntity<Object> deleteCompilation(@PathVariable Long compId) {
+    public ResponseEntity<HttpStatus> deleteCompilation(@PathVariable Long compId) {
         log.info("Delete /compilations/{}", compId);
 
         compilationService.deleteCompilation(compId);
@@ -180,7 +178,7 @@ public class AdminController {
     }
 
     @PatchMapping("/compilations/{compId}")
-    public ResponseEntity<Object> postCompilation(@PathVariable Long compId, @RequestBody @Valid CompilationPatchDto compilationNewDto) {
+    public ResponseEntity<CompilationDto> postCompilation(@PathVariable Long compId, @RequestBody @Valid CompilationPatchDto compilationNewDto) {
         log.info("Patch /compilations/{} with {}", compId, compilationNewDto);
 
         return ResponseEntity

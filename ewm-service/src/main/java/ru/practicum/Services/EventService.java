@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static ru.practicum.DateUtils.formatter;
+import static ru.practicum.DateUtils.*;
 import static ru.practicum.mapper.EventMapper.*;
 import static ru.practicum.mapper.RequestMapper.requestToShortDto;
 
@@ -49,8 +49,8 @@ public class EventService {
 
     public EventCreationAnswerDto postEvent(EventCreationDto eventCreationDto, Long userId) {
 
-        if (eventCreationDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new BadEntityException("начало ивента - минимум через 2 часа");
+        if (eventCreationDto.getEventDate().isBefore(getEventStartMinimum())) {
+            throw new BadEntityException("wrong event date");
         }
 
         locationRepository.save(eventCreationDto.getLocation());
@@ -92,14 +92,14 @@ public class EventService {
         List<EventShortDto> result = new ArrayList<>();
 
         if (rangeStart == null) {
-            rangeStart = LocalDateTime.now().format(formatter);
+            rangeStart = getNowTimeString();
         }
         if (rangeEnd == null) {
-            rangeEnd = LocalDateTime.now().plusYears(1000).format(formatter);
+            rangeEnd = getDistantFutureTimeString();
         }
 
         if (LocalDateTime.parse(rangeStart, formatter).isAfter(LocalDateTime.parse(rangeEnd, formatter))) {
-            throw new WrongParamsException("неверные даты в фильтре");
+            throw new WrongParamsException("wrong dates in filters");
         }
 
 
@@ -141,12 +141,13 @@ public class EventService {
         } else eventPage = eventRepository.findAll(byEndDate.and(byStartDate), page);
 
 
-        statClient.postHit(new StatHitDTO("ewm-service", uri, ip, LocalDateTime.now().format(formatter)));
+        statClient.postHit(new StatHitDTO("ewm-service", uri, ip, getNowTimeString()));
 
         eventPage.getContent().forEach(event1 -> {
             EventShortDto eventShortDto = eventToShortDto(event1);
             result.add(eventShortDto);
         });
+
 
         if (result.size() > from % size) {
             return result.subList(from % size, result.size());
@@ -248,9 +249,9 @@ public class EventService {
             throw new NotFoundEntityException("Event with id=" + eventId + " was not found");
         }
         EventFullDto eventFullDto = eventToFullDto(event);
-        statClient.postHit(new StatHitDTO("ewm-service", uri, ip, LocalDateTime.now().format(formatter)));
-        StatDTO[] statDTOList = statClient.getStatDTOs(Map.of("start", LocalDateTime.now().minusYears(1000).format(formatter),
-                "end", LocalDateTime.now().plusYears(1000).format(formatter),
+        statClient.postHit(new StatHitDTO("ewm-service", uri, ip, getNowTimeString()));
+        StatDTO[] statDTOList = statClient.getStatDTOs(Map.of("start", getDistantPastTimeString(),
+                "end", getDistantFutureTimeString(),
                 "uris", uri,
                 "unique", true)
         ).getBody();
@@ -271,13 +272,13 @@ public class EventService {
         Event event = eventRepository.findById(eventId).get();
 
         if ((event.getState() == State.PUBLISHED) && (eventFullDto.getStateAction() == StateAction.PUBLISH_EVENT)) {
-            throw new BadEntityException("событие уже опубликовано");
+            throw new BadEntityException("event is already published");
         }
         if ((event.getState() == State.CANCELED) && (eventFullDto.getStateAction() == StateAction.PUBLISH_EVENT)) {
-            throw new BadEntityException("событие уже оменено");
+            throw new BadEntityException("event is canceled");
         }
         if ((event.getState() == State.PUBLISHED) && (eventFullDto.getStateAction() == StateAction.REJECT_EVENT)) {
-            throw new BadEntityException("событие уже опубликовано");
+            throw new BadEntityException("event is already published");
         }
 
         if (eventFullDto.getCategory() != null) {
@@ -323,8 +324,8 @@ public class EventService {
     public EventFullDto getEventByUser(Long userId, Long eventId) {
         EventFullDto eventFullDto = eventToFullDto(eventRepository.findById(eventId).get());
 
-        Map<String, Object> parameters = Map.of("start", (LocalDateTime.now().minusYears(1000).format(formatter)),
-                "end", (LocalDateTime.now().plusYears(1000).format(formatter)),
+        Map<String, Object> parameters = Map.of("start", getDistantPastTimeString(),
+                "end", getDistantFutureTimeString(),
                 "uris", "/event/" + eventId,
                 "unique", true);
 
@@ -343,11 +344,11 @@ public class EventService {
         Event event = eventRepository.findById(eventId).get();
 
         if (!event.getInitiator().getId().equals(userId)) {
-            throw new NotFoundEntityException("у юзера такого ивента нет");
+            throw new NotFoundEntityException("there is no such event");
         }
 
         if (event.getState() == State.PUBLISHED) {
-            throw new BadEntityException("событие уже опубликовано");
+            throw new BadEntityException("event is already published");
         }
 
         if (eventFullDto.getCategory() != null) {
@@ -419,11 +420,11 @@ public class EventService {
 
         requests.forEach(request -> {
             if (request.getStatus() == Status.CONFIRMED) {
-                throw new BadEntityException("завявка уже была принята");
+                throw new BadEntityException("request is already confirmed");
             }
 
             if ((event.getParticipantLimit() != 0) && (event.getParticipantLimit() <= requestRepository.countAllByEventAndStatusIs(event, Status.CONFIRMED))) {
-                throw new BadEntityException("превышено число участников");
+                throw new BadEntityException("there is no room for more participants");
             }
             request.setStatus(requestDto.getStatus());
 
@@ -458,19 +459,19 @@ public class EventService {
 
 
         if (event.getInitiator().getId().equals(userId)) {
-            throw new BadEntityException("получен запрос на учистие от инициатора ивента");
+            throw new BadEntityException("request from event initiator");
         }
 
         if (event.getState() != State.PUBLISHED) {
-            throw new BadEntityException("ивент еще не опубликован");
+            throw new BadEntityException("event is not published yet");
         }
 
         if ((event.getParticipantLimit() != 0) && (event.getParticipantLimit() <= requestRepository.countAllByEventAndStatusIs(event, Status.CONFIRMED))) {
-            throw new BadEntityException("превышено число участников");
+            throw new BadEntityException("there is no room for more participants");
         }
 
         if (!requestRepository.findAllByEventAndRequester(event, userRepository.findById(userId).get()).isEmpty()) {
-            throw new BadEntityException("реквест на данный ивент уже существует");
+            throw new BadEntityException("there is no such request");
         }
 
         Request request = new Request();

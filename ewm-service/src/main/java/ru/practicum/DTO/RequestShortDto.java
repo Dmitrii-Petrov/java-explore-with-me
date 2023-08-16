@@ -9,6 +9,8 @@ import ru.practicum.model.enums.Status;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.DateUtils.DATE_FORMAT;
+
 
 @Data
 
@@ -19,7 +21,7 @@ public class RequestShortDto {
 
 
     private Long id;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
     private LocalDateTime created;
 
     private Long event;

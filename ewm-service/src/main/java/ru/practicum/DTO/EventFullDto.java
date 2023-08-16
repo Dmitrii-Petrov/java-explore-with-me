@@ -14,6 +14,8 @@ import javax.validation.constraints.Future;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
+import static ru.practicum.DateUtils.DATE_FORMAT;
+
 
 @Data
 
@@ -28,14 +30,14 @@ public class EventFullDto {
     private String annotation;
 
     private Long category;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
     private LocalDateTime createdOn;
 
     @Size(min = 20, max = 7000)
     private String description;
 
     @Future
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
     private LocalDateTime eventDate;
 
     private User initiator;
