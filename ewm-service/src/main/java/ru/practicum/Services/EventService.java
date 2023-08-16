@@ -493,6 +493,5 @@ public class EventService {
         request.setStatus(Status.CANCELED);
 
         return requestToShortDto(requestRepository.save(request));
-
     }
 }

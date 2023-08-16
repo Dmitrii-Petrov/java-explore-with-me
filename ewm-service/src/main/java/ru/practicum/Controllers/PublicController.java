@@ -6,16 +6,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.DTO.CategoryDto;
-import ru.practicum.DTO.CompilationDto;
-import ru.practicum.DTO.EventFullDto;
-import ru.practicum.DTO.EventShortDto;
+import ru.practicum.DTO.*;
 import ru.practicum.Services.CategoryService;
+import ru.practicum.Services.CommentService;
 import ru.practicum.Services.CompilationService;
 import ru.practicum.Services.EventService;
 import ru.practicum.exceptions.NotFoundEntityException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.LinkedHashMap;
@@ -36,6 +35,8 @@ public class PublicController {
     private final EventService eventService;
 
     private final CompilationService compilationService;
+
+    private final CommentService commentService;
 
 
     @GetMapping("/events")
@@ -123,6 +124,30 @@ public class PublicController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(compilationService.getCompilationById(compId));
+    }
+
+    @GetMapping("/comments/{commentId}")
+    public ResponseEntity<CommentGetDto> getEventById(@PathVariable Long commentId) {
+        log.info("Get comments/{}", commentId);
+
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(commentService.getCommentById(commentId));
+    }
+
+    @GetMapping("/comments")
+    public ResponseEntity<List<CommentGetDto>> getEventById(@RequestParam @NotNull @PositiveOrZero Long eventId,
+                                                            @RequestParam(required = false) String rangeStart,
+                                                            @RequestParam(required = false) String rangeEnd,
+                                                            @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                                            @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
+        log.info("Get comments wtih eventId = {}, rangeStart={}, rangeEnd={}, from={}, size={}", eventId, rangeStart, rangeEnd, from, size);
+
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(commentService.getCommentsForEvent(eventId, rangeStart, rangeEnd, from, size));
     }
 
 }

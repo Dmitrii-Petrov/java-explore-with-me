@@ -7,8 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.DTO.*;
+import ru.practicum.Services.CommentService;
 import ru.practicum.Services.EventService;
 import ru.practicum.exceptions.BadEntityException;
+import ru.practicum.exceptions.NotFoundEntityException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -27,6 +29,8 @@ import static ru.practicum.DateUtils.getErrorTime;
 @Validated
 public class PrivateController {
     private final EventService eventService;
+
+    private final CommentService commentService;
 
     @GetMapping("/{userId}/events")
     public ResponseEntity<List<EventFullDto>> getEvents(@PathVariable @NotNull @PositiveOrZero Long userId,
@@ -135,6 +139,70 @@ public class PrivateController {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
+    @PostMapping("/{userId}/events/{eventId}/comments")
+    public ResponseEntity<CommentGetDto> postComment(@PathVariable @NotNull @PositiveOrZero Long userId,
+                                                     @PathVariable @NotNull @PositiveOrZero Long eventId,
+                                                     @RequestBody @NotNull @Valid CommentCreationDto commentCreationDto) {
+        log.info("Post /{}/events/{}/comments with {}", userId, eventId, commentCreationDto);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(commentService.postComment(userId, eventId, commentCreationDto));
+    }
+
+    @PatchMapping("/{userId}/events/{eventId}/comments")
+    public ResponseEntity<CommentGetDto> patchComment(@PathVariable @NotNull @PositiveOrZero Long userId,
+                                                      @PathVariable @NotNull @PositiveOrZero Long eventId,
+                                                      @RequestBody @NotNull @Valid CommentCreationDto commentCreationDto) {
+        log.info("Patch /{}/events/{}/comments with {}", userId, eventId, commentCreationDto);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(commentService.patchComment(userId, eventId, commentCreationDto));
+    }
+
+    @DeleteMapping("/{userId}/events/{eventId}/comments/{commentId}")
+    public ResponseEntity<HttpStatus> patchComment(@PathVariable @NotNull @PositiveOrZero Long userId,
+                                                   @PathVariable @NotNull @PositiveOrZero Long eventId,
+                                                   @PathVariable @NotNull @PositiveOrZero Long commentId) {
+        log.info("Delete /{}/events/{}/comments/{}", userId, eventId, commentId);
+
+        commentService.deleteComment(userId, eventId, commentId);
+
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .body(null);
+    }
+
+    @GetMapping("/{userId}/events/{eventId}/comments")
+    public ResponseEntity<List<CommentGetDto>> getUserComments(@PathVariable @NotNull @PositiveOrZero Long userId,
+                                                               @PathVariable @NotNull @PositiveOrZero Long eventId,
+                                                               @RequestParam(required = false) String rangeStart,
+                                                               @RequestParam(required = false) String rangeEnd,
+                                                               @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                                               @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
+        log.info("Get /{}/events/{}/comments with rangeStart={}, rangeEnd={}, from={}, size={}",
+                userId, eventId, rangeStart, rangeEnd, from, size);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(commentService.getUserComments(userId, eventId, rangeStart, rangeEnd, from, size));
+    }
+
+    @ExceptionHandler(value = {NotFoundEntityException.class})
+    public ResponseEntity<Map<String, Object>> handleNotFoundEntityException(final NotFoundEntityException ex) {
+        Map<String, Object> response = new LinkedHashMap<>();
+
+        response.put("status", HttpStatus.NOT_FOUND.name());
+        response.put("reason", HttpStatus.NOT_FOUND.getReasonPhrase());
+        response.put("message", ex.getMessage());
+        response.put("timestamp", getErrorTime());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
                 .body(response);
     }
 
