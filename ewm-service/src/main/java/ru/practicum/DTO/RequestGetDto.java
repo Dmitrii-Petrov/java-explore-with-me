@@ -1,32 +1,33 @@
-package ru.practicum;
+package ru.practicum.DTO;
+
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.model.User;
+import ru.practicum.model.enums.Status;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
 import static ru.practicum.DateUtils.DATE_FORMAT;
 
+
 @Data
-@Entity
+
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "statistic", schema = "public")
-public class Stat {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+public class RequestGetDto {
+
+
     private Long id;
-
-    private String app;
-
-    private String uri;
-
-    private String ip;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
-    private LocalDateTime timestamp;
+    private LocalDateTime created;
 
+    private Long event;
+
+    private User requester;
+
+    private Status status;
 }
