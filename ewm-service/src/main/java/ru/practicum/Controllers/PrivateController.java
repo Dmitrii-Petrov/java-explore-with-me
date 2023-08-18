@@ -9,18 +9,12 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.DTO.*;
 import ru.practicum.Services.CommentService;
 import ru.practicum.Services.EventService;
-import ru.practicum.exceptions.BadEntityException;
-import ru.practicum.exceptions.NotFoundEntityException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-
-import static ru.practicum.DateUtils.getErrorTime;
 
 @RestController
 @RequestMapping("/users")

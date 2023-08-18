@@ -11,18 +11,15 @@ import ru.practicum.Services.CategoryService;
 import ru.practicum.Services.CompilationService;
 import ru.practicum.Services.EventService;
 import ru.practicum.Services.UserService;
-import ru.practicum.exceptions.BadEntityException;
-import ru.practicum.exceptions.FailNameException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-import static ru.practicum.DateUtils.*;
+import static ru.practicum.DateUtils.getDistantFutureTimeString;
+import static ru.practicum.DateUtils.getNowTimeString;
 
 @RestController
 @RequestMapping("/admin")
@@ -60,7 +57,6 @@ public class AdminController {
                 .status(HttpStatus.OK)
                 .body(categoryService.patchCategory(catId, categoryDto));
     }
-
 
 
     @PatchMapping("/events/{eventId}")
