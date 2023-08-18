@@ -33,18 +33,14 @@ public class StatController {
 
         if (LocalDateTime.parse(start, formatter).isAfter(LocalDateTime.parse(end, formatter))) {
             Map<String, Object> response = new LinkedHashMap<>();
-
             response.put("status", HttpStatus.NOT_FOUND.name());
             response.put("reason", HttpStatus.NOT_FOUND.getReasonPhrase());
             response.put("message", "wrong dates");
             response.put("timestamp", getErrorTime());
-
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(response);
         } else
-
-
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(statService.getStats(start, end, uris, unique));
@@ -58,5 +54,4 @@ public class StatController {
                 .status(HttpStatus.CREATED)
                 .body(null);
     }
-
 }

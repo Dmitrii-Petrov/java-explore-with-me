@@ -33,11 +33,8 @@ public class AdminController {
 
     private final CategoryService categoryService;
     private final UserService userService;
-
     private final EventService eventService;
-
     private final CompilationService compilationService;
-
 
     @PostMapping("/categories")
     public ResponseEntity<CategoryDto> postCategory(@RequestBody @Valid CategoryDto categoryDto) {
@@ -46,7 +43,6 @@ public class AdminController {
                 .status(HttpStatus.CREATED)
                 .body(categoryService.postCategory(categoryDto));
     }
-
 
     @DeleteMapping("/categories/{catId}")
     public ResponseEntity<HttpStatus> deleteCategory(@PathVariable @NotNull @PositiveOrZero Long catId) {
@@ -60,49 +56,20 @@ public class AdminController {
     @PatchMapping("/categories/{catId}")
     public ResponseEntity<CategoryDto> patchCategory(@PathVariable @NotNull @PositiveOrZero Long catId, @RequestBody @Valid CategoryDto categoryDto) {
         log.info("Patch category with Id = {}, body = {}", catId, categoryDto);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(categoryService.patchCategory(catId, categoryDto));
     }
 
-    @ExceptionHandler(value = {FailNameException.class})
-    public ResponseEntity<Map<String, Object>> handleUnknownStateException(final FailNameException ex) {
-        Map<String, Object> response = new LinkedHashMap<>();
 
-        response.put("status", HttpStatus.CONFLICT.name());
-        response.put("reason", HttpStatus.CONFLICT.getReasonPhrase());
-        response.put("message", ex.getMessage());
-        response.put("timestamp", getErrorTime());
-
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(response);
-    }
-
-    @ExceptionHandler(value = {BadEntityException.class})
-    public ResponseEntity<Map<String, Object>> handleUnknownStateException(final BadEntityException ex) {
-        Map<String, Object> response = new LinkedHashMap<>();
-
-        response.put("status", HttpStatus.CONFLICT.name());
-        response.put("reason", HttpStatus.CONFLICT.getReasonPhrase());
-        response.put("message", ex.getMessage());
-        response.put("timestamp", getErrorTime());
-
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(response);
-    }
 
     @PatchMapping("/events/{eventId}")
     public ResponseEntity<EventFullDto> patchEvent(@PathVariable @NotNull @PositiveOrZero Long eventId, @RequestBody @Valid EventFullDto eventFullDto) {
         log.info("Patch events with eventId = {}, body = {}", eventId, eventFullDto);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(eventService.patchEventByAdmin(eventId, eventFullDto));
     }
-
 
     @GetMapping("/events")
     public ResponseEntity<List<EventFullDto>> getEventsByAdmin(@RequestParam(required = false) List<Long> users,
@@ -114,26 +81,22 @@ public class AdminController {
                                                                @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
         log.info("Get events with users={}, states={}, categories={}, rangeStart={}, rangeEnd={}, from={}, size={}",
                 users, states, categories, rangeStart, rangeEnd, from, size);
-
         if (rangeStart == null) {
             rangeStart = getNowTimeString();
         }
         if (rangeEnd == null) {
             rangeEnd = getDistantFutureTimeString();
         }
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(eventService.getAdminEvents(users, states, categories, rangeStart, rangeEnd, from, size));
     }
-
 
     @GetMapping("/users")
     public ResponseEntity<List<UserDto>> getUsers(@RequestParam(required = false) List<Long> ids,
                                                   @RequestParam(required = false, defaultValue = "0") Integer from,
                                                   @RequestParam(required = false, defaultValue = "10") Integer size) {
         log.info("Get users {}, from = {}, size ={}", ids, from, size);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(userService.getUsers(ids, from, size));
@@ -142,7 +105,6 @@ public class AdminController {
     @PostMapping("/users")
     public ResponseEntity<UserDto> postUser(@RequestBody @Valid UserDto userDto) {
         log.info("Post users {}", userDto);
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(userService.saveUser(userDto));
@@ -161,7 +123,6 @@ public class AdminController {
     @PostMapping("/compilations")
     public ResponseEntity<CompilationDto> postCompilation(@RequestBody @Valid CompilationNewDto compilationNewDto) {
         log.info("Post /compilations {}", compilationNewDto);
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(compilationService.postCompilation(compilationNewDto));
@@ -170,7 +131,6 @@ public class AdminController {
     @DeleteMapping("/compilations/{compId}")
     public ResponseEntity<HttpStatus> deleteCompilation(@PathVariable Long compId) {
         log.info("Delete /compilations/{}", compId);
-
         compilationService.deleteCompilation(compId);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
@@ -180,11 +140,8 @@ public class AdminController {
     @PatchMapping("/compilations/{compId}")
     public ResponseEntity<CompilationDto> postCompilation(@PathVariable Long compId, @RequestBody @Valid CompilationPatchDto compilationNewDto) {
         log.info("Patch /compilations/{} with {}", compId, compilationNewDto);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(compilationService.patchCompilation(compId, compilationNewDto));
     }
-
-
 }

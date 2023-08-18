@@ -12,5 +12,4 @@ public class LocationMapper {
     public static LocationDto locationToDto(Location location) {
         return new LocationDto(location.getLat(), location.getLon());
     }
-
 }

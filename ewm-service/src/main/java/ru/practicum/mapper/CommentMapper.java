@@ -26,5 +26,4 @@ public class CommentMapper {
     public static CommentGetDto commentToGetDto(Comment comment) {
         return new CommentGetDto(comment.getId(), comment.getCreated(), comment.getEvent().getId(), comment.getCommentator().getId(), comment.getText());
     }
-
 }

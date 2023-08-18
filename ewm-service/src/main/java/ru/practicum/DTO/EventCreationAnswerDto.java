@@ -21,7 +21,6 @@ import static ru.practicum.DateUtils.DATE_FORMAT;
 @NoArgsConstructor
 public class EventCreationAnswerDto {
 
-
     private Long id;
 
     @Size(min = 20, max = 2000)
@@ -46,7 +45,6 @@ public class EventCreationAnswerDto {
     private Boolean paid;
 
     private Long participantLimit;
-
 
     private LocalDateTime publishedOn;
 

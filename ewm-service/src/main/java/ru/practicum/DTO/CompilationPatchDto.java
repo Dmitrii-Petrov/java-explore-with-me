@@ -13,12 +13,10 @@ import java.util.List;
 @NoArgsConstructor
 public class CompilationPatchDto {
 
-
     private List<Long> events = new ArrayList<>();
 
     private Boolean pinned = false;
 
     @Size(max = 50, min = 1)
     private String title;
-
 }

@@ -25,5 +25,4 @@ public class CompilationNewDto {
     @NotBlank
     @Size(max = 50, min = 1)
     private String title;
-
 }

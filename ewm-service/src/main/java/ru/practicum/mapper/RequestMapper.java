@@ -9,7 +9,6 @@ import ru.practicum.model.Request;
 @AllArgsConstructor
 public class RequestMapper {
 
-
     public static RequestShortDto requestToShortDto(Request request) {
         return new RequestShortDto(request.getId(),
                 request.getCreated(),

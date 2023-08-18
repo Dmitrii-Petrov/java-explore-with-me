@@ -31,13 +31,9 @@ import static ru.practicum.DateUtils.getErrorTime;
 public class PublicController {
 
     private final CategoryService categoryService;
-
     private final EventService eventService;
-
     private final CompilationService compilationService;
-
     private final CommentService commentService;
-
 
     @GetMapping("/events")
     public ResponseEntity<List<EventShortDto>> getEvents(@RequestParam(required = false) String text,
@@ -46,52 +42,30 @@ public class PublicController {
                                                          @RequestParam(required = false) String rangeStart,
                                                          @RequestParam(required = false) String rangeEnd,
                                                          @RequestParam(defaultValue = "false") Boolean onlyAvailable,
-                                                         //EVENT_DATE, VIEWS
                                                          @RequestParam(required = false) String sort,
                                                          @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                                          @RequestParam(name = "size", defaultValue = "10") @Positive Integer size,
                                                          HttpServletRequest request) {
         log.info("Get events with text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}",
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request.getRemoteAddr(), request.getRequestURI()));
     }
 
-
     @GetMapping("/events/{eventId}")
     public ResponseEntity<EventFullDto> getEventById(@PathVariable Long eventId,
                                                      HttpServletRequest request) {
         log.info("Get event/{}", eventId);
-
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(eventService.getPublicEventById(eventId, request.getRemoteAddr(), request.getRequestURI()));
     }
 
-
-    @ExceptionHandler(value = {NotFoundEntityException.class})
-    public ResponseEntity<Map<String, Object>> handleUnknownStateException(final NotFoundEntityException ex) {
-        Map<String, Object> response = new LinkedHashMap<>();
-
-        response.put("status", HttpStatus.NOT_FOUND.name());
-        response.put("reason", HttpStatus.NOT_FOUND.getReasonPhrase());
-        response.put("message", ex.getMessage());
-        response.put("timestamp", getErrorTime());
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
-    }
-
-
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryDto>> getCategories(@RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                                            @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
         log.info("Get categories with  from={}, size={}", from, size);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(categoryService.getCategories(from, size));
@@ -100,7 +74,6 @@ public class PublicController {
     @GetMapping("/categories/{catId}")
     public ResponseEntity<CategoryDto> getCategory(@PathVariable Long catId) {
         log.info("Get categories/{}", catId);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(categoryService.getCategory(catId));
@@ -111,7 +84,6 @@ public class PublicController {
                                                                 @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                                                 @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
         log.info("Get compilations with pinned={}  from={}, size={}", pinned, from, size);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(compilationService.getCompilations(pinned, from, size));
@@ -120,7 +92,6 @@ public class PublicController {
     @GetMapping("/compilations/{compId}")
     public ResponseEntity<CompilationDto> getCompilationsById(@PathVariable Long compId) {
         log.info("Get compilations/{}", compId);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(compilationService.getCompilationById(compId));
@@ -129,8 +100,6 @@ public class PublicController {
     @GetMapping("/comments/{commentId}")
     public ResponseEntity<CommentGetDto> getEventById(@PathVariable Long commentId) {
         log.info("Get comments/{}", commentId);
-
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(commentService.getCommentById(commentId));
@@ -143,11 +112,8 @@ public class PublicController {
                                                             @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                                             @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
         log.info("Get comments wtih eventId = {}, rangeStart={}, rangeEnd={}, from={}, size={}", eventId, rangeStart, rangeEnd, from, size);
-
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(commentService.getCommentsForEvent(eventId, rangeStart, rangeEnd, from, size));
     }
-
 }

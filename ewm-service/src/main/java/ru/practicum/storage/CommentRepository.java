@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
+
     Page<Comment> findAllByEventAndCommentatorAndCreatedIsAfterAndCreatedIsBefore(Event event, User user, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     Page<Comment> findAllByEventAndCreatedIsAfterAndCreatedIsBefore(Event event, LocalDateTime start, LocalDateTime end, Pageable pageable);

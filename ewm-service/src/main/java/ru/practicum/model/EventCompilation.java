@@ -25,5 +25,4 @@ public class EventCompilation {
     @ManyToOne
     @JoinColumn(name = "compilation")
     private Compilation compilation;
-
 }

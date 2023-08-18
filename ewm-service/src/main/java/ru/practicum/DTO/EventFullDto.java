@@ -23,7 +23,6 @@ import static ru.practicum.DateUtils.DATE_FORMAT;
 @NoArgsConstructor
 public class EventFullDto {
 
-
     private Long id;
 
     @Size(min = 20, max = 2000)
@@ -47,7 +46,6 @@ public class EventFullDto {
     private Boolean paid;
 
     private Long participantLimit;
-
 
     private LocalDateTime publishedOn;
 

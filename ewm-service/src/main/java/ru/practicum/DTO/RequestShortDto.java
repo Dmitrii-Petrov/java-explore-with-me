@@ -19,7 +19,6 @@ import static ru.practicum.DateUtils.DATE_FORMAT;
 
 public class RequestShortDto {
 
-
     private Long id;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
     private LocalDateTime created;

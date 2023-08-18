@@ -28,5 +28,4 @@ public class Stat {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_FORMAT)
     private LocalDateTime timestamp;
-
 }

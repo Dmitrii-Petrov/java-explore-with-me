@@ -43,13 +43,4 @@ public interface StatRepository extends JpaRepository<Stat, Long> {
             "group by st.app,st.uri " +
             "order by count(distinct st.ip) desc")
     List<StatDTO> countHitsUniqueIpNullUris(LocalDateTime start, LocalDateTime end);
-
-    @Query("select new ru.practicum.StatDTO(st.app, st.uri, count(distinct st.ip))" +
-            "from Stat as st " +
-            "where " +
-            "(st.uri = ?1) and " +
-            "(st.timestamp between ?2 and ?3) " +
-            "group by st.app,st.uri " +
-            "order by count(distinct st.ip) desc")
-    StatDTO countHits(String uri, LocalDateTime start, LocalDateTime end);
 }

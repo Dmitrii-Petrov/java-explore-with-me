@@ -21,5 +21,4 @@ public class CommentCreationDto {
     @NotBlank
     @Size(max = 7000, min = 1)
     private String text;
-
 }
