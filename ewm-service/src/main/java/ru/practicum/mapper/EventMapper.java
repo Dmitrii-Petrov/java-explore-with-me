@@ -72,7 +72,6 @@ public class EventMapper {
 
     public static Event dtoToEvent(EventCreationDto eventCreationDto, Category category, User user) {
         Event event = new Event();
-
         event.setAnnotation(eventCreationDto.getAnnotation());
         event.setCategory(category);
         event.setCreatedOn(eventCreationDto.getCreatedOn());
@@ -81,22 +80,15 @@ public class EventMapper {
         event.setInitiator(user);
         event.setLocation(eventCreationDto.getLocation());
         event.setPaid(eventCreationDto.getPaid());
-
         if (eventCreationDto.getParticipantLimit() != null) {
             event.setParticipantLimit(eventCreationDto.getParticipantLimit());
         } else event.setParticipantLimit(0L);
-
         event.setPublishedOn(eventCreationDto.getPublishedOn());
         event.setRequestModeration(eventCreationDto.getRequestModeration());
-
         if (eventCreationDto.getState() != null) {
             event.setState(eventCreationDto.getState());
         } else event.setState(State.PENDING);
-
         event.setTitle(eventCreationDto.getTitle());
-
         return event;
     }
-
-
 }

@@ -16,10 +16,8 @@ public class CompilationMapper {
         compilationDto.setId(compilation.getId());
         compilationDto.setPinned(compilation.getPinned());
         compilationDto.setTitle(compilation.getTitle());
-
         return compilationDto;
     }
-
 
     public static Compilation dtoToCompilation(CompilationNewDto compilationDto) {
         Compilation compilation = new Compilation();
@@ -27,5 +25,4 @@ public class CompilationMapper {
         compilation.setPinned(compilationDto.getPinned());
         return compilation;
     }
-
 }

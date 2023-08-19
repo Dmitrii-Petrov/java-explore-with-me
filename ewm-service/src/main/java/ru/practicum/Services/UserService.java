@@ -32,23 +32,19 @@ public class UserService {
         } else {
             userPage = userRepository.findAll(page);
         }
-
         List<UserDto> result = new ArrayList<>();
         userPage.getContent().forEach(user -> {
             result.add(userToDto(user));
         });
-
         if (result.size() > from % size) {
             return result.subList(from % size, result.size());
         } else return new ArrayList<>();
-
     }
 
     public UserDto saveUser(UserDto userDto) {
         if (userRepository.existsByName(userDto.getName())) {
             throw new FailNameException("there is already user with such name");
         }
-
         User user = userRepository.save(dtoToUser(userDto));
         userDto.setId(user.getId());
         return userDto;
@@ -57,5 +53,4 @@ public class UserService {
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
-
 }

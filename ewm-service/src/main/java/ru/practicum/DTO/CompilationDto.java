@@ -19,5 +19,4 @@ public class CompilationDto {
     private Boolean pinned;
 
     private String title;
-
 }

@@ -25,7 +25,6 @@ import static ru.practicum.DateUtils.DATE_FORMAT;
 @NoArgsConstructor
 public class EventCreationDto {
 
-
     private Long id;
 
     @NotNull

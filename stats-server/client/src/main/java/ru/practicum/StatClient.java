@@ -20,7 +20,7 @@ public class StatClient {
     @Autowired
     public StatClient(RestTemplateBuilder builder) {
         this.rest = builder
-                .uriTemplateHandler(new DefaultUriBuilderFactory(/*"http://localhost:9090"*/"http://stats-server:9090"))
+                .uriTemplateHandler(new DefaultUriBuilderFactory("http://stats-server:9090"))
                 .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                 .build();
     }

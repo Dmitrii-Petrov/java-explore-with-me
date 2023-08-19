@@ -21,5 +21,4 @@ public class Compilation {
     private Boolean pinned;
 
     private String title;
-
 }

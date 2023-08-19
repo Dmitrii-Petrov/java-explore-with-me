@@ -26,21 +26,19 @@ import static ru.practicum.mapper.CategoryMapper.dtoToCategory;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
-
     private final EventRepository eventRepository;
 
     public CategoryDto postCategory(CategoryDto categoryDto) {
         if (categoryRepository.existsByName(categoryDto.getName())) {
-            throw new FailNameException("there is no such category");
+            throw new FailNameException("there is already category with name=" + categoryDto.getName());
         }
         Category category = dtoToCategory(categoryDto);
         return categoryToDto(categoryRepository.save(category));
-
     }
 
     public void deleteCategory(Long id) {
         if (eventRepository.existsAllByCategoryId(id)) {
-            throw new BadEntityException("there are events with this category");
+            throw new BadEntityException("there are events with this category with id=" + id);
         }
         categoryRepository.deleteById(id);
     }
@@ -49,18 +47,14 @@ public class CategoryService {
 
         Category category = categoryRepository.findById(catId).get();
         Category category1 = categoryRepository.findByName(categoryDto.getName());
-
-
         if ((category1 != null) && (!(catId).equals(category1.getId()))) {
-            throw new FailNameException("there is such category already");
+            throw new FailNameException("there is already category with name=" + categoryDto.getName());
         }
-
         if (categoryDto.getName() != null) {
             category.setName(categoryDto.getName());
         }
         return categoryToDto(categoryRepository.save(category));
     }
-
 
     public List<CategoryDto> getCategories(Integer from,
                                            Integer size) {
@@ -75,11 +69,9 @@ public class CategoryService {
         } else return new ArrayList<>();
     }
 
-
     public CategoryDto getCategory(Long catId) {
         if (!categoryRepository.existsById(catId)) {
             throw new NotFoundEntityException("Category with id=" + catId + "was not found");
         } else return categoryToDto(categoryRepository.findById(catId).get());
-
     }
 }
